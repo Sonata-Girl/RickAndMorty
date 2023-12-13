@@ -8,15 +8,15 @@
 import UIKit
 
 protocol MainVCBuilderProtocol {
-    func createMainViewModule(router: RouterProtocol) -> UIViewController
+    func createMainViewModule(router: RouterProtocol) -> MainViewController
 }
 
 final class MainVCBuilder: MainVCBuilderProtocol {
-    func createMainViewModule(router: RouterProtocol) -> UIViewController {
+    func createMainViewModule(router: RouterProtocol) -> MainViewController {
         let view = MainViewController()
-//        let networkService = NetworkService()
-//        let presenter = MainTableViewPresenter(view: view, networkService: networkService, router: router)
-//        view.presenter = presenter
+        let networkService = NetworkService()
+        let presenter = MainViewPresenter(view: view, networkManager: networkService, router: router)
+        view.presenter = presenter
 
         return view
     }

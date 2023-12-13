@@ -37,7 +37,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             detailVCBuilder: detailVCBuilder,
             rootController: navigationController
         )
-//        router.initialMainViewController()
+        tabBarController.configureTabBar(
+            mainVC: mainVCBuilder.createMainViewModule(router: router),
+            favoritesVC: favoritesVCBuilder.createFavoritesViewModule(router: router)
+        )
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
          

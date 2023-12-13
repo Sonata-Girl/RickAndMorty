@@ -196,8 +196,8 @@
 		67F3E57C2B29B99F0067D505 /* FaroritesScene */ = {
 			isa = PBXGroup;
 			children = (
-				67F3E57D2B29B9C80067D505 /* FavoritesViewController.swift */,
 				67F3E57F2B2A2BB40067D505 /* FavoritesVCBuilder.swift */,
+				67F3E57D2B29B9C80067D505 /* FavoritesViewController.swift */,
 				67F3E5812B2A2BD10067D505 /* FavoritesViewPresenter.swift */,
 			);
 			path = FaroritesScene;

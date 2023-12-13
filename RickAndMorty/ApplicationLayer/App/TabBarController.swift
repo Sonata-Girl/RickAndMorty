@@ -11,35 +11,8 @@ final class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        settingsTabBar()
         setTabBarAppearance()
     }
-    
-    private func settingsTabBar() {
-        viewControllers = [
-            generateVC(
-                viewController: MainViewController(),
-                title: "",
-                image: UIImage(named: "episodes"),
-                selectedImage: UIImage(named: "episodesSelect")
-            ),
-            generateVC(
-                viewController: FavoritesViewController(),
-                title: "",
-                image: UIImage(named: "favorites"),
-                selectedImage: UIImage(named: "favoritesSelect")
-            ),
-       ]
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-    }
-    
-       override func viewWillAppear( _ animated: Bool) {
-           super.viewWillAppear(animated)
-       }
-       
     
     private func generateVC(viewController: UIViewController, title: String, image: UIImage?, selectedImage: UIImage? ) -> UINavigationController {
         let navigationController = UINavigationController(rootViewController: viewController)
@@ -68,5 +41,25 @@ final class TabBarController: UITabBarController {
 
         // Добавление слоя на tabBar
         tabBar.layer.addSublayer(shadowLayer)
+    }
+    
+    func configureTabBar(
+        mainVC: MainViewController,
+        favoritesVC: FavoritesViewController
+    ) {
+        viewControllers = [
+            generateVC(
+                viewController: mainVC,
+                title: "",
+                image: UIImage(named: "episodes"),
+                selectedImage: UIImage(named: "episodesSelect")
+            ),
+            generateVC(
+                viewController: favoritesVC,
+                title: "",
+                image: UIImage(named: "favorites"),
+                selectedImage: UIImage(named: "favoritesSelect")
+            ),
+       ]
     }
 }

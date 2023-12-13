@@ -11,53 +11,59 @@ import Foundation
 
 protocol FavoritesViewProtocol: AnyObject {
     func favoritesLoaded()
-//    func imageLoaded()
-//    func failure(error: Error)
+    //    func imageLoaded()
+    //    func failure(error: Error)
 }
 
 // MARK: - Presenter protocol
 
 protocol FavoritesPresenterProtocol: AnyObject {
     init(view: FavoritesViewProtocol,
-         networkManager: NetworkServiceProtocol)
+         networkManager: NetworkServiceProtocol,
+         router: RouterProtocol
+    )
     var favorites: EpisodeModels { get set }
     func getEpisodes()
-//    func loadImage(jobModel: EpisodeModel, indexItem: Int)
-//    func saveSelectedCells(selectedCells: EpisodeModels)
+    //    func loadImage(jobModel: EpisodeModel, indexItem: Int)
+    //    func saveSelectedCells(selectedCells: EpisodeModels)
 }
 
 // MARK: - Presenter
 
 final class FavoritesViewPresenter: FavoritesPresenterProtocol {
-        weak var view: FavoritesViewProtocol?
-        let networkManager: NetworkServiceProtocol?
-        var favorites: EpisodeModels = []
-//        var savedSelectedCells = SelectedCellsSavingModel()
+    weak var view: FavoritesViewProtocol?
+    let networkManager: NetworkServiceProtocol?
+    var router: RouterProtocol?
+    var favorites: EpisodeModels = []
+    //        var savedSelectedCells = SelectedCellsSavingModel()
     
-        required init(view: FavoritesViewProtocol,
-            networkManager: NetworkServiceProtocol
-        ) {
-            self.view = view
-            self.networkManager = networkManager
-            loadUserSaves()
-        }
+    required init(
+        view: FavoritesViewProtocol,
+        networkManager: NetworkServiceProtocol,
+        router: RouterProtocol
+    ) {
+        self.view = view
+        self.networkManager = networkManager
+        self.router = router
+        //            loadUserSaves()
+    }
     
     // MARK: Loading data methods
     
     func getEpisodes() {
-//        networkManager?.getEpisodes() { [weak self] result in
-//            guard let self else { return }
-//            DispatchQueue.main.async {
-//                switch result {
-//                    case .success(let episodes):
-//                        self.episodes += episodes.models
-////                        self.loadSelectedCellsSettings()
-//                        self.view?.episodesLoaded()
-//                    case .failure(let error):
-//                        self.view?.failure(error: error)
-//                }
-//            }
-//        }
+        //        networkManager?.getEpisodes() { [weak self] result in
+        //            guard let self else { return }
+        //            DispatchQueue.main.async {
+        //                switch result {
+        //                    case .success(let episodes):
+        //                        self.episodes += episodes.models
+        ////                        self.loadSelectedCellsSettings()
+        //                        self.view?.episodesLoaded()
+        //                    case .failure(let error):
+        //                        self.view?.failure(error: error)
+        //                }
+        //            }
+        //        }
     }
     
     //    func loadImage(jobModel: JobModel, indexItem: Int) {

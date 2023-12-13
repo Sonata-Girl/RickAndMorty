@@ -8,15 +8,15 @@
 import UIKit
 
 protocol FavoritesVCBuilderProtocol {
-    func createFavoritesViewModule(router: RouterProtocol) -> UIViewController
+    func createFavoritesViewModule(router: RouterProtocol) -> FavoritesViewController
 }
 
 final class FavoritesVCBuilder: FavoritesVCBuilderProtocol {
-    func createFavoritesViewModule(router: RouterProtocol) -> UIViewController {
+    func createFavoritesViewModule(router: RouterProtocol) -> FavoritesViewController {
         let view = FavoritesViewController()
-//        let networkService = NetworkService()
-//        let presenter = MainTableViewPresenter(view: view, networkService: networkService, router: router)
-//        view.presenter = presenter
+        let networkService = NetworkService()
+        let presenter = FavoritesViewPresenter(view: view, networkManager: networkService, router: router)
+        view.presenter = presenter
 
         return view
     }

@@ -20,30 +20,36 @@ protocol MainViewProtocol: AnyObject {
 
 protocol MainPresenterProtocol: AnyObject {
     init(view: MainViewProtocol,
-         networkManager: NetworkServiceProtocol)
+         networkManager: NetworkServiceProtocol,
+         router: RouterProtocol
+    )
     var episodes: EpisodeModels { get set }
     var filteredEpisodes: EpisodeModels  { get set }
     func getEpisodes()
-//    func loadImage(jobModel: EpisodeModel, indexItem: Int)
-//    func saveSelectedCells(selectedCells: EpisodeModels)
+    //    func loadImage(jobModel: EpisodeModel, indexItem: Int)
+    //    func saveSelectedCells(selectedCells: EpisodeModels)
 }
 
 // MARK: - Presenter
 
 final class MainViewPresenter: MainPresenterProtocol {
-        weak var view: MainViewProtocol?
-        let networkManager: NetworkServiceProtocol?
-        var episodes: EpisodeModels = []
-        var filteredEpisodes: EpisodeModels = []
-//        var savedSelectedCells = SelectedCellsSavingModel()
+    weak var view: MainViewProtocol?
+    let networkManager: NetworkServiceProtocol?
+    var router: RouterProtocol?
+    var episodes: EpisodeModels = []
+    var filteredEpisodes: EpisodeModels = []
+    //        var savedSelectedCells = SelectedCellsSavingModel()
     
-        required init(view: MainViewProtocol,
-            networkManager: NetworkServiceProtocol
-        ) {
-            self.view = view
-            self.networkManager = networkManager
-            loadUserSaves()
-        }
+    required init(
+        view: MainViewProtocol,
+        networkManager: NetworkServiceProtocol,
+        router: RouterProtocol
+    ) {
+        self.view = view
+        self.networkManager = networkManager
+        self.router = router
+        //            loadUserSaves()
+    }
     
     // MARK: Loading data methods
     
@@ -54,7 +60,7 @@ final class MainViewPresenter: MainPresenterProtocol {
                 switch result {
                     case .success(let episodes):
                         self.episodes += episodes.models
-//                        self.loadSelectedCellsSettings()
+                        //                        self.loadSelectedCellsSettings()
                         self.view?.episodesLoaded()
                     case .failure(let error):
                         self.view?.failure(error: error)

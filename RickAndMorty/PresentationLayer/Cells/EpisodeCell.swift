@@ -28,10 +28,9 @@ final class EpisodeCell: UICollectionViewCell {
    }()
     
     private let characterNameLabel: UILabel = {
-        let label = PaddingLabel()
-         label.font = Constants.mediumFont
+        let label = UILabel()
+        label.font = Constants.mediumFont
         label.textColor = .label
-        label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -40,9 +39,9 @@ final class EpisodeCell: UICollectionViewCell {
     
     private let bottomView: UIView = {
         let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .lightGray.withAlphaComponent(0.3)
-        view.layer.cornerRadius = Constants.lightCornerRadius
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = Constants.mediumCornerRadius
         return view
     }()
     
@@ -50,30 +49,30 @@ final class EpisodeCell: UICollectionViewCell {
         let imageView = UIImageView()
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = UIImage(named: "play")?.withRenderingMode(.alwaysTemplate)
         imageView.tintColor = .black
+        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
     private let episodeNumberLabel: UILabel = {
-        let label = PaddingLabel()
+        let label = UILabel()
         label.textColor = .label
         label.clipsToBounds = true
-        label.textAlignment = .center
         label.font = Constants.semiboldFont
+        label.backgroundColor = .orange
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     let favoriteImage: UIImageView = {
-       let imageView = UIImageView()
-       imageView.contentMode = .scaleAspectFit
-       imageView.clipsToBounds = true
-       imageView.image = UIImage(named: "favorite")
-       imageView.translatesAutoresizingMaskIntoConstraints = false
-       return imageView
-   }()
+        let imageView = UIImageView()
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
+        imageView.image = UIImage(named: "favorites")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
     
     // MARK: Init
     
@@ -132,8 +131,7 @@ private extension EpisodeCell {
 
 private extension EpisodeCell {
     func setupLayout() {
-        let quarterSizeWidthCell = bounds.width/3.8
-        
+    
         // MARK: Main view constraints
         
         NSLayoutConstraint.activate([
@@ -147,60 +145,54 @@ private extension EpisodeCell {
             episodeImage.topAnchor.constraint(equalTo: mainView.topAnchor),
             episodeImage.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
             episodeImage.trailingAnchor.constraint(equalTo: mainView.trailingAnchor),
-            episodeImage.heightAnchor.constraint(equalToConstant: quarterSizeWidthCell)
+            episodeImage.heightAnchor.constraint(equalToConstant: 230)
         ])
         
         NSLayoutConstraint.activate([
             characterNameLabel.topAnchor.constraint(equalTo: episodeImage.bottomAnchor),
-            characterNameLabel.leadingAnchor.constraint(equalTo: mainView.leadingAnchor, constant: Constants.smallSpacingItems),
-            mainView.trailingAnchor.constraint(equalTo: characterNameLabel.trailingAnchor, constant: Constants.smallSpacingItems),
-            characterNameLabel.heightAnchor.constraint(equalToConstant: 55)
+            characterNameLabel.leadingAnchor.constraint(equalTo: mainView.leadingAnchor, constant: Constants.mediumSpacingItems),
+            mainView.trailingAnchor.constraint(equalTo: characterNameLabel.trailingAnchor, constant: Constants.mediumSpacingItems),
          ])
         
         // MARK: Bottom subview constraints
       
         NSLayoutConstraint.activate([
             bottomView.topAnchor.constraint(equalTo: characterNameLabel.bottomAnchor),
-            bottomView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor, constant: Constants.smallSpacingItems),
-            mainView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor, constant: Constants.smallSpacingItems),
-            mainView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: Constants.smallSpacingItems),
+            bottomView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
+            mainView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
+            mainView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
+            bottomView.heightAnchor.constraint(equalToConstant: 70)
           ])
         
-        
         NSLayoutConstraint.activate([
-//            playLabel.topAnchor.constraint(
-//                equalTo: bottomView.topAnchor,
-//                constant: Constants.smallSpacingItems
-//            ),
-            playLabel.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor, constant: Constants.smallSpacingItems),
-            bottomView.centerYAnchor.constraint(equalTo: playLabel.centerYAnchor),
+            playLabel.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor, constant: Constants.mediumSpacingItems),
+            playLabel.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
             playLabel.widthAnchor.constraint(equalToConstant: 32),
             playLabel.heightAnchor.constraint(equalToConstant: 32),
         ])
         
         NSLayoutConstraint.activate([
-            episodeNumberLabel.topAnchor.constraint(equalTo: bottomView.topAnchor),
+            episodeNumberLabel.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
             episodeNumberLabel.leadingAnchor.constraint(
-                equalTo: playLabel.rightAnchor,
-                constant: Constants.smallSpacingItems
+                equalTo: playLabel.trailingAnchor,
+                constant: Constants.mediumSpacingItems
             ),
-            episodeNumberLabel.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
+//            episodeNumberLabel.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
+            playLabel.heightAnchor.constraint(equalToConstant: 32),
         ])
         
         NSLayoutConstraint.activate([
-            favoriteImage.topAnchor.constraint(equalTo: bottomView.topAnchor),
+            favoriteImage.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
             favoriteImage.leadingAnchor.constraint(
-                equalTo: playLabel.rightAnchor,
-                constant: Constants.smallSpacingItems
+                equalTo: episodeNumberLabel.trailingAnchor,
+                constant: Constants.mediumSpacingItems
             ),
             bottomView.trailingAnchor.constraint(
                 equalTo: favoriteImage.trailingAnchor,
-                constant: Constants.smallSpacingItems
+                constant: Constants.mediumSpacingItems
             ),
-            bottomView.bottomAnchor.constraint(
-                equalTo: favoriteImage.bottomAnchor,
-                constant: Constants.smallSpacingItems
-            ),
+            favoriteImage.widthAnchor.constraint(equalToConstant: 32),
+            favoriteImage.heightAnchor.constraint(equalToConstant: 32),
         ])
         
     }
@@ -259,11 +251,7 @@ private enum Constants {
     static var lightCornerRadius: CGFloat = 6
     static var mediumCornerRadius: CGFloat = 15
     
-    static var indentFromSuperView: CGFloat = 20
-    static var mediumSpacingItems: CGFloat = 15
-    static var smallSpacingItems: CGFloat = 10
-    
-    static var heightOfCellParts: CGFloat = 52
+    static var mediumSpacingItems: CGFloat = 20
     
     static var smallFont: UIFont = .systemFont(ofSize: 15)
     static var semiboldFont: UIFont = .systemFont(
@@ -278,5 +266,4 @@ private enum Constants {
         ofSize: 20,
         weight: .medium
     )
-    static var rubSymbol = "₽"
 }
