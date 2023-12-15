@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  CustomLayoutSection.swift
 //  RickAndMorty
 //
 //  Created by Sonata Girl on 13.12.2023.

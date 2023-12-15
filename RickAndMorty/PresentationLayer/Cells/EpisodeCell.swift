@@ -1,5 +1,5 @@
 //
-//  EpisodeViewCell.swift
+//  EpisodeCell.swift
 //  RickAndMorty
 //
 //  Created by Sonata Girl on 12.12.2023.

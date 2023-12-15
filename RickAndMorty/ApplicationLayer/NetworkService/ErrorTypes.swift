@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ErrorTypes.swift
 //  RickAndMorty
 //
 //  Created by Sonata Girl on 14.12.2023.

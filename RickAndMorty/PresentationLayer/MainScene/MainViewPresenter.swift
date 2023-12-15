@@ -26,8 +26,9 @@ protocol MainPresenterProtocol: AnyObject {
     var pageInfo: PageInfo? { get set }
     var episodes: EpisodeModels { get set }
     var filteredEpisodes: EpisodeModels  { get set }
-    func getEpisodes()
-    func subloadEpisodes()
+    func getEpisodes(subload: Bool)
+    var isSubloading: Bool { get set }
+    func startSubloadEpisodes()
     func getCharacter(characterUrl: URL, episodeIndex: Int)
     func loadCharacterImage(characterImageUrl: URL, indexItem: Int)
     //    func saveSelectedCells(selectedCells: EpisodeModels)
@@ -43,7 +44,9 @@ final class MainViewPresenter: MainPresenterProtocol {
     var filteredEpisodes: EpisodeModels = []
     var pageNumber = 1
     var pageInfo: PageInfo?
- 
+    var isSubloading = false
+    private let cacheEpisode = NSCache<NSString, CacheEpisodeWrapper>()
+    
     required init(
         view: MainViewProtocol,
         networkManager: NetworkServiceProtocol,
@@ -54,33 +57,40 @@ final class MainViewPresenter: MainPresenterProtocol {
         self.router = router
         //            loadUserSaves()
     }
-    
+
     // MARK: Loading data methods
     
-    func getEpisodes() {
+    func getEpisodes(subload: Bool = false) {
         networkManager?.getEpisodes(page: pageNumber) { [weak self] result in
             guard let self else { return }
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                switch result {
-                    case .success(let episodesDto):
-                        pageInfo = PageInfo(from: episodesDto.info)
-                        self.episodes += episodesDto.results.models
-                        //                        self.loadSelectedCellsSettings()
-                        self.view?.episodesLoaded()
-                    case .failure(let error):
-                        self.view?.failure(error: error)
-                }
+            switch result {
+                case .success(let episodesDto):
+                    pageInfo = PageInfo(from: episodesDto.info)
+                    self.episodes += episodesDto.results.models
+                    //                        self.loadSelectedCellsSettings()
+                    self.view?.episodesLoaded()
+                case .failure(let error):
+                    self.view?.failure(error: error)
             }
+            isSubloading = subload
         }
     }
     
-    func subloadEpisodes() {
+    func startSubloadEpisodes() {
+        isSubloading = true
         pageNumber += 1
-        getEpisodes()
+        getEpisodes(subload: isSubloading)
     }
     
     func getCharacter(characterUrl: URL, episodeIndex: Int) {
+        if let episodeUrl = self.episodes[episodeIndex].episodeUrl {
+            if let cachedEpisode = cacheEpisode.object(forKey: episodeUrl.absoluteString as NSString) {
+                if let character = cachedEpisode.character {
+                    self.episodes[episodeIndex].character = CharacterModel(from: character)
+                    return
+                }
+            }
+        }
         networkManager?.getCharacter(characterUrl: characterUrl) { [weak self] result in
             guard let self else { return }
             DispatchQueue.main.async { [weak self] in
@@ -101,6 +111,10 @@ final class MainViewPresenter: MainPresenterProtocol {
             guard let self,
                   let imageData = result else { return }
             self.episodes[indexItem].character?.imageData = imageData
+            if let url = self.episodes[indexItem].episodeUrl {
+                let episodeModelWrapped = CacheEpisodeWrapper(from: self.episodes[indexItem])
+                self.cacheEpisode.setObject(episodeModelWrapped, forKey: url.absoluteString as NSString)
+            }
             self.view?.characterLoaded()
         }
     }

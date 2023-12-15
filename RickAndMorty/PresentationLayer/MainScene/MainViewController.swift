@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MainViewController.swift
 //  RickAndMorty
 //
 //  Created by Sonata Girl on 12.12.2023.
@@ -58,7 +58,7 @@ final class MainViewController: UIViewController {
         configureNavigationController()
         setupDataSource()
         
-        presenter?.getEpisodes()
+        presenter?.getEpisodes(subload: false)
     }
 
     private func saveUserSettings() {
@@ -80,8 +80,6 @@ private extension MainViewController {
 private extension MainViewController {
     func additionSubviews() {
         view.addSubview(episodesCollectionView)
-//        view.addSubview(reserveView)
-//        reserveView.addSubview(reserveButton)
     }
 }
 
@@ -187,6 +185,7 @@ private extension MainViewController {
             var updatedSnapshot = dataSource?.snapshot() else { return }
         if isSearchBarEmpty {
             updatedSnapshot.reloadItems(presenter.episodes)
+//            updatedSnapshot.appendItems(presenter.episodes, toSection: 0)
         } else {
             updatedSnapshot.reloadItems(presenter.filteredEpisodes)
         }
@@ -216,7 +215,9 @@ extension MainViewController: UICollectionViewDelegate {
             let _ = presenter.pageInfo?.next
         else { return }
         
-        presenter.subloadEpisodes()
+        if !presenter.isSubloading {
+            presenter.startSubloadEpisodes()
+        }
     }
 //    func getReservedJobs() -> EpisodeModels {
 //        guard let jobs = presenter?.jobs else { return JobsModel() }
@@ -230,13 +231,15 @@ extension MainViewController: MainViewProtocol {
     func episodesLoaded() {
         guard let presenter else { return }
         DispatchQueue.main.async { [weak self] in
-            self?.createDataSnapshot(items: presenter.episodes)
+            guard let self else { return }
+            self.createDataSnapshot(items: presenter.episodes)
         }
     }
     
     func characterLoaded() {
         DispatchQueue.main.async { [weak self] in
-            self?.updateDataSnapshot()
+            guard let self else { return }
+            self.updateDataSnapshot()
         }
     }
     

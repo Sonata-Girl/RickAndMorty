@@ -37,5 +37,3 @@ extension Array where Element == CharacterDto {
         self.map { $0.model }
     }
 }
-
-typealias CharacterDtoModels = [CharacterDto]

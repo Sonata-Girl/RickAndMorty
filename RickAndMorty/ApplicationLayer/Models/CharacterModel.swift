@@ -45,5 +45,19 @@ extension CharacterModel {
     }
 }
 
+extension CharacterModel {
+    init(from cache: CacheCharacterWrapper) {
+        self.id = cache.id
+        self.name = cache.name
+        self.gender = cache.gender
+        self.status = cache.status
+        self.type = cache.type
+        self.origin = cache.origin
+        self.location = cache.location
+        self.imageUrl = cache.imageUrl
+        self.imageData = cache.imageData
+    }
+}
+
 // MARK: - Date convert methods
 typealias CharacterModels = [CharacterModel]

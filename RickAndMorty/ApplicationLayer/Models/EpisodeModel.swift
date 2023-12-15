@@ -11,7 +11,7 @@ import Foundation
 
 struct EpisodeModel: Hashable, Identifiable {
     let id: Int
-    let episodeImageUrl: URL?
+    let episodeUrl: URL?
     var isFavorite: Bool
     let episodeNumber: String
     var characterUrl: URL
@@ -29,16 +29,26 @@ struct EpisodeModel: Hashable, Identifiable {
 // MARK: - Convert from dto method
 
 extension EpisodeModel {
-    init(from dto: EpisodeDto
-//         episodeImageData: Data?
-//         characterModel: CharacterModel
-    ){
+    init(from dto: EpisodeDto){
         self.id = dto.id
-        self.episodeImageUrl = dto.url
+        self.episodeUrl = dto.url
         self.episodeNumber = "\(dto.name) | \(dto.episode)"
         self.isFavorite = false
         self.characterUrl = dto.character
         self.character = nil
+    }
+}
+
+extension EpisodeModel {
+    init(from cache: CacheEpisodeWrapper){
+        self.id = cache.id
+        self.episodeUrl = cache.episodeUrl
+        self.episodeNumber = cache.episodeNumber
+        self.isFavorite = cache.isFavorite
+        self.characterUrl = cache.characterUrl
+        if let characterWrapped = cache.character {
+            self.character = CharacterModel(from: characterWrapped)
+        }
     }
 }
 
