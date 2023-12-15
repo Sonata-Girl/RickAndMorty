@@ -18,20 +18,21 @@ final class EpisodeCell: UICollectionViewCell {
         return view
     }()
     
-    let episodeImage: UIImageView = {
-       let imageView = UIImageView()
-       imageView.contentMode = .scaleAspectFit
-       imageView.clipsToBounds = true
-       imageView.image = UIImage(named: "NameLogo")
-       imageView.translatesAutoresizingMaskIntoConstraints = false
-       return imageView
-   }()
+    let characterImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.image = Constants.characterLogoDefault
+        imageView.layer.cornerRadius = Constants.lightCornerRadius
+        imageView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
     
     private let characterNameLabel: UILabel = {
-        let label = PaddingLabel()
-         label.font = Constants.mediumFont
+        let label = UILabel()
+        label.font = Constants.mediumFont
         label.textColor = .label
-        label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -40,40 +41,37 @@ final class EpisodeCell: UICollectionViewCell {
     
     private let bottomView: UIView = {
         let view = UIView()
+        view.backgroundColor = .lightGray.withAlphaComponent(0.1)
+        view.layer.cornerRadius = Constants.mediumCornerRadius
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .lightGray.withAlphaComponent(0.3)
-        view.layer.cornerRadius = Constants.lightCornerRadius
         return view
     }()
     
     private let playLabel: UIImageView = {
         let imageView = UIImageView()
-        imageView.clipsToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(named: "play")?.withRenderingMode(.alwaysTemplate)
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(named: "play")
         imageView.tintColor = .black
+        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
     private let episodeNumberLabel: UILabel = {
-        let label = PaddingLabel()
+        let label = UILabel()
         label.textColor = .label
-        label.clipsToBounds = true
-        label.textAlignment = .center
-        label.font = Constants.semiboldFont
+        label.font = Constants.lightFont
+        label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     let favoriteImage: UIImageView = {
-       let imageView = UIImageView()
-       imageView.contentMode = .scaleAspectFit
-       imageView.clipsToBounds = true
-       imageView.image = UIImage(named: "favorite")
-       imageView.translatesAutoresizingMaskIntoConstraints = false
-       return imageView
-   }()
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = Constants.favoriteLogoDefault
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
     
     // MARK: Init
     
@@ -87,29 +85,29 @@ final class EpisodeCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        setDefaultStateCell()
+    }
 }
-
 // MARK: - Configure view
 
 private extension EpisodeCell {
     func configureView() {
         backgroundColor = .white
-        layer.cornerRadius = Constants.lightCornerRadius
-        layer.masksToBounds = false
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOpacity = 0.12
-        layer.shadowRadius = 4
-        layer.shadowPath = UIBezierPath(
-            roundedRect: bounds,
-            cornerRadius: Constants.mediumCornerRadius
-        ).cgPath
     }
     
     func setDefaultStateCell() {
-//        layer.shadowOpacity = 0.12
-//        layer.borderWidth = 0
-//        layer.borderColor = nil
-//        layer.shadowColor = UIColor.black.cgColor // цвет
+        layer.cornerRadius = Constants.lightCornerRadius
+        layer.shadowOffset = CGSize(width: 0, height: 1)
+        layer.shadowRadius = 2
+        layer.shadowColor = UIColor.black.withAlphaComponent(0.7).cgColor
+        layer.shadowOpacity = 0.5
+        layer.shadowPath = UIBezierPath(
+            roundedRect: bounds.insetBy(dx: -1, dy: -1),
+            cornerRadius: Constants.lightCornerRadius
+        ).cgPath
     }
 }
 
@@ -118,7 +116,7 @@ private extension EpisodeCell {
 private extension EpisodeCell {
     func additionSubviews() {
         contentView.addSubview(mainView)
-        mainView.addSubview(episodeImage)
+        mainView.addSubview(characterImage)
         mainView.addSubview(characterNameLabel)
         mainView.addSubview(bottomView)
         
@@ -132,8 +130,7 @@ private extension EpisodeCell {
 
 private extension EpisodeCell {
     func setupLayout() {
-        let quarterSizeWidthCell = bounds.width/3.8
-        
+    
         // MARK: Main view constraints
         
         NSLayoutConstraint.activate([
@@ -144,105 +141,90 @@ private extension EpisodeCell {
         ])
         
         NSLayoutConstraint.activate([
-            episodeImage.topAnchor.constraint(equalTo: mainView.topAnchor),
-            episodeImage.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
-            episodeImage.trailingAnchor.constraint(equalTo: mainView.trailingAnchor),
-            episodeImage.heightAnchor.constraint(equalToConstant: quarterSizeWidthCell)
+            characterImage.topAnchor.constraint(equalTo: mainView.topAnchor),
+            characterImage.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
+            characterImage.trailingAnchor.constraint(equalTo: mainView.trailingAnchor),
+            characterImage.heightAnchor.constraint(equalToConstant: bounds.height / 1.5)
         ])
         
         NSLayoutConstraint.activate([
-            characterNameLabel.topAnchor.constraint(equalTo: episodeImage.bottomAnchor),
-            characterNameLabel.leadingAnchor.constraint(equalTo: mainView.leadingAnchor, constant: Constants.smallSpacingItems),
-            mainView.trailingAnchor.constraint(equalTo: characterNameLabel.trailingAnchor, constant: Constants.smallSpacingItems),
-            characterNameLabel.heightAnchor.constraint(equalToConstant: 55)
+            characterNameLabel.topAnchor.constraint(equalTo: characterImage.bottomAnchor),
+            characterNameLabel.leadingAnchor.constraint(equalTo: mainView.leadingAnchor, constant: Constants.mediumSpacingItems),
+            mainView.trailingAnchor.constraint(equalTo: characterNameLabel.trailingAnchor, constant: Constants.mediumSpacingItems),
          ])
         
         // MARK: Bottom subview constraints
       
         NSLayoutConstraint.activate([
             bottomView.topAnchor.constraint(equalTo: characterNameLabel.bottomAnchor),
-            bottomView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor, constant: Constants.smallSpacingItems),
-            mainView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor, constant: Constants.smallSpacingItems),
-            mainView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor, constant: Constants.smallSpacingItems),
+            bottomView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
+            mainView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
+            mainView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
+            bottomView.heightAnchor.constraint(equalTo: mainView.heightAnchor, multiplier: 0.2)
           ])
         
-        
         NSLayoutConstraint.activate([
-//            playLabel.topAnchor.constraint(
-//                equalTo: bottomView.topAnchor,
-//                constant: Constants.smallSpacingItems
-//            ),
-            playLabel.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor, constant: Constants.smallSpacingItems),
-            bottomView.centerYAnchor.constraint(equalTo: playLabel.centerYAnchor),
-            playLabel.widthAnchor.constraint(equalToConstant: 32),
-            playLabel.heightAnchor.constraint(equalToConstant: 32),
+            playLabel.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor, constant: Constants.mediumSpacingItems),
+            playLabel.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
+            playLabel.widthAnchor.constraint(equalToConstant: Constants.smallSizeBottomUI),
+            playLabel.heightAnchor.constraint(equalToConstant: Constants.smallSizeBottomUI),
         ])
         
         NSLayoutConstraint.activate([
-            episodeNumberLabel.topAnchor.constraint(equalTo: bottomView.topAnchor),
+            episodeNumberLabel.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
             episodeNumberLabel.leadingAnchor.constraint(
-                equalTo: playLabel.rightAnchor,
-                constant: Constants.smallSpacingItems
-            ),
-            episodeNumberLabel.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
+                equalTo: playLabel.trailingAnchor,
+                constant: Constants.lightSpacingItems
+            )
         ])
-        
+
         NSLayoutConstraint.activate([
-            favoriteImage.topAnchor.constraint(equalTo: bottomView.topAnchor),
+            favoriteImage.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
             favoriteImage.leadingAnchor.constraint(
-                equalTo: playLabel.rightAnchor,
-                constant: Constants.smallSpacingItems
+                equalTo: episodeNumberLabel.trailingAnchor,
+                constant: Constants.lightSpacingItems
             ),
             bottomView.trailingAnchor.constraint(
                 equalTo: favoriteImage.trailingAnchor,
-                constant: Constants.smallSpacingItems
+                constant: Constants.mediumSpacingItems
             ),
-            bottomView.bottomAnchor.constraint(
-                equalTo: favoriteImage.bottomAnchor,
-                constant: Constants.smallSpacingItems
-            ),
+            favoriteImage.widthAnchor.constraint(equalToConstant: Constants.mediumSizeBottomUI),
+            favoriteImage.heightAnchor.constraint(equalToConstant: Constants.mediumSizeBottomUI),
         ])
-        
     }
 }
 
 // MARK: - Configure cell values
 
 extension EpisodeCell {
-//    func configureCell(jobModel: JobModel) {
-//        jobNameLabel.text = jobModel.profession
-//        salaryLabel.text = "\(String(format: "%.2f", jobModel.salary)) \(Constants.rubSymbol)"
-//        employerLabel.text = jobModel.employer
-//        dateLabel.text = jobModel.dateDay
-//        timeLabel.text = jobModel.dateTime
-//        
-//        if let logoData = jobModel.logoData {
-//            employerImageView.image = UIImage(data: logoData)
+    func configureCell(episodeModel: EpisodeModel) {
+        characterNameLabel.text = episodeModel.character?.name
+        episodeNumberLabel.text = episodeModel.episodeNumber
+       
+        if let imageData = episodeModel.character?.imageData {
+            characterImage.image = UIImage(data: imageData)
+            characterImage.contentMode = .scaleAspectFill
+        }
+        #warning("Clean")
+//        if let data = try? Data(contentsOf: episodeModel.character?.imageUrl ?? URL(fileURLWithPath: "")) {
+//            characterImage.image = UIImage(data: data)
 //        }
-//        changeStateOfSelectedCell(selected: jobModel.isSelected)
-//    }
+        
+        changeSelectedCellState(selected: episodeModel.isFavorite)
+    }
     
-//    func changeStateOfSelectedCell(selected: Bool) {
-//        switch selected {
-//            case true :
-//                layer.borderColor = UIColor.appYellowColor().cgColor
-//                layer.borderWidth = 2
-//                layer.shadowColor = UIColor.appYellowColor().cgColor
-//                layer.shadowOpacity = 0.6
-//            case false :
-//                setDefaultStateCell()
-//        }
-//    }
-//    
-//    override func prepareForReuse() {
-//        jobNameLabel.text = nil
-//        salaryLabel.text = nil
-//        employerLabel.text = nil
-//        dateLabel.text = nil
-//        timeLabel.text = nil
-//        employerImageView.image = UIImage(named: "noLogo")?.withRenderingMode(.alwaysTemplate)
-//        setDefaultStateCell()
-//    }
+    func changeSelectedCellState(selected: Bool) {
+        favoriteImage.image = selected ? UIImage(named: "favoriteSelect") : Constants.favoriteLogoDefault
+    }
+
+    override func prepareForReuse() {
+        characterNameLabel.text = nil
+        episodeNumberLabel.text = nil
+        characterImage.image = Constants.characterLogoDefault
+        favoriteImage.image = Constants.favoriteLogoDefault
+        characterImage.contentMode = .scaleAspectFit
+    }
+    
 }
 
 // MARK: - Identifier cell
@@ -259,16 +241,16 @@ private enum Constants {
     static var lightCornerRadius: CGFloat = 6
     static var mediumCornerRadius: CGFloat = 15
     
-    static var indentFromSuperView: CGFloat = 20
-    static var mediumSpacingItems: CGFloat = 15
-    static var smallSpacingItems: CGFloat = 10
+    static var smallSizeBottomUI: CGFloat = 40
+    static var mediumSizeBottomUI: CGFloat = 45
     
-    static var heightOfCellParts: CGFloat = 52
+    static var lightSpacingItems: CGFloat = 5
+    static var mediumSpacingItems: CGFloat = 20
     
     static var smallFont: UIFont = .systemFont(ofSize: 15)
-    static var semiboldFont: UIFont = .systemFont(
+    static var lightFont: UIFont = .systemFont(
         ofSize: 20,
-        weight: .semibold
+        weight: .light
     )
    static var regularFont: UIFont = .systemFont(
         ofSize: 20,
@@ -278,5 +260,7 @@ private enum Constants {
         ofSize: 20,
         weight: .medium
     )
-    static var rubSymbol = "₽"
+    
+    static var characterLogoDefault = UIImage(named: "NameLogo")
+    static var favoriteLogoDefault = UIImage(named: "favorite")
 }

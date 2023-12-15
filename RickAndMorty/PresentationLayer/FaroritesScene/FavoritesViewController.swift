@@ -9,233 +9,252 @@ import UIKit
 
 class FavoritesViewController: UIViewController {
     
-    // MARK: UI
+    // MARK: Properties
     
-    private let searchController: UISearchController = {
-        let search = UISearchController()
-        return search
+    var presenter: FavoritesPresenterProtocol?
+    private var dataSource: UICollectionViewDiffableDataSource<Int, EpisodeModel>?
+    
+    private var isSearchBarEmpty: Bool {
+        return searchController.searchBar.text?.isEmpty ?? true
+    }
+    
+    private var isFiltering: Bool {
+        return searchController.isActive && !isSearchBarEmpty
+    }
+    
+    // MARK: UI elements
+    
+    private var searchController: UISearchController = {
+        let sc = UISearchController()
+        sc.searchBar.placeholder = "Поиск"
+        sc.searchBar.searchBarStyle = .minimal
+        return sc
     }()
     
-    private lazy var favoriteGroupsCollection: UICollectionView = {
+    private lazy var episodesCollectionView: UICollectionView = {
         let layout = createLayout()
-        let collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collection.register(EpisodeCell.self, forCellWithReuseIdentifier: EpisodeCell.identifier)
-//        collection.register(
-//            SectionsHeader.self,
-//            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-//            withReuseIdentifier: .sectionsHeader
-//        )
-        collection.showsVerticalScrollIndicator = false
-        collection.dataSource = self
-        collection.delegate = self
-        return collection
+        let collectionView = UICollectionView(
+            frame: .zero,
+            collectionViewLayout: layout
+        )
+        collectionView.register(
+            EpisodeCell.self,
+            forCellWithReuseIdentifier: EpisodeCell.identifier
+        )
+        collectionView.showsVerticalScrollIndicator = false
+        //        collectionView.backgroundColor = .appLightGrayColor()
+        collectionView.delegate = self
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
     }()
     
-    // MARK: Lifecycle
+    // MARK: - View controller lifecycle methods
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupHierarchy()
+        configureView()
+        additionSubviews()
         setupLayout()
-        setupView()
-        setupNavigationBar()
+        configureNavigationController()
+        setupDataSource()
+        
+        presenter?.getEpisodes()
+    }
+    
+    private func saveUserSettings() {
+        guard let presenter else { return }
+        //        presenter.saveSelectedCells(selectedCells: getReservedJobs())
     }
 }
 
-// MARK: - UITableViewDelegate
+// MARK: - Configure view properties
 
-extension FavoritesViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        Constants.tableRowHeight
+private extension FavoritesViewController {
+    func configureView() {
+        view.backgroundColor = .white
     }
 }
 
-// MARK: - UITableViewDataSource
+// MARK: - Setup view
 
-extension FavoritesViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        Constants.numberRowInSection
+private extension FavoritesViewController {
+    func additionSubviews() {
+        view.addSubview(episodesCollectionView)
+        //        view.addSubview(reserveView)
+        //        reserveView.addSubview(reserveButton)
+    }
+}
+
+// MARK: - Setup layouts for UI
+
+private extension FavoritesViewController {
+    func setupLayout() {
+        NSLayoutConstraint.activate([
+            episodesCollectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            episodesCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            episodesCollectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            episodesCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
+}
+
+// MARK: - Configure navigation controller
+
+private extension FavoritesViewController {
+    func configureNavigationController() {
+        navigationItem.searchController = searchController
+        //        searchController.searchResultsUpdater = self
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: .myCategoriesCell, for: indexPath)
-        var content = cell.defaultContentConfiguration()
-        content.text = Constants.tableCellText
-        content.image = UIImage(systemName: Constants.tableCellImage)
-        content.imageProperties.tintColor = .red
-        cell.contentConfiguration = content
-        return cell
+    //    func filterContentForSearchText(_ searchText: String) {
+    //        guard let presenter else { return }
+    //
+    //        presenter.filteredJobs = presenter.jobs.filter { jobModel in
+    //            if isSearchBarEmpty {
+    //                return false
+    //            } else {
+    //                return jobModel.employer.lowercased().contains(searchText.lowercased()) || jobModel.profession.lowercased().contains(searchText.lowercased())
+    //            }
+    //        }
+    //        if isSearchBarEmpty {
+    //            createDataSnapshot(items: presenter.jobs)
+    //        } else {
+    //            createDataSnapshot(items: presenter.filteredJobs)
+    //        }
+    //    }
+}
+
+// MARK: - Search methods
+
+//extension MainViewController: UISearchResultsUpdating {
+//    func updateSearchResults(for searchController: UISearchController) {
+//        guard let filter = searchController.searchBar.text else { return }
+//        filterContentForSearchText(filter)
+//    }
+//}
+
+// MARK: - Collection layout methods
+
+private extension FavoritesViewController {
+    func createLayout() -> UICollectionViewCompositionalLayout {
+        let layoutSection = CustomLayoutSection.shared.create()
+        return UICollectionViewCompositionalLayout(section: layoutSection)
+    }
+}
+
+// MARK: - Collection DataSource setup
+
+private extension FavoritesViewController {
+    func setupDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<Int, EpisodeModel>(collectionView: episodesCollectionView) { [weak self]
+            (collectionView: UICollectionView, indexPath: IndexPath, item: EpisodeModel) -> UICollectionViewCell? in
+            guard let self,
+                  let presenter = self.presenter,
+                  let cell = episodesCollectionView.dequeueReusableCell(
+                    withReuseIdentifier: EpisodeCell.identifier,
+                    for: indexPath
+                  ) as? EpisodeCell else { return EpisodeCell() }
+            
+            //            let jobs = self.isFiltering ? presenter.filteredJobs : presenter.jobs
+            //            let item = jobs[indexPath.item]
+            //
+            //            if item.logoData == nil {
+            //                presenter.loadImage(
+            //                    jobModel: item,
+            //                    indexItem: indexPath.item
+            //                )
+            //            }
+            //            cell.configureCell(jobModel: item)
+            return cell
+        }
+    }
+    
+    func createDataSnapshot(items: EpisodeModels) {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, EpisodeModel>()
+        snapshot.appendSections([0])
+        snapshot.appendItems(items)
+        dataSource?.apply(
+            snapshot,
+            animatingDifferences: false
+        )
+    }
+    
+    func updateDataSnapshot(withAnimation: Bool = false) {
+        guard let presenter,
+              var updatedSnapshot = dataSource?.snapshot() else { return }
+        if isSearchBarEmpty {
+            //            updatedSnapshot.reloadItems(presenter.jobs)
+        } else {
+            //            updatedSnapshot.reloadItems(presenter.filteredJobs)
+        }
+        self.dataSource?.apply(
+            updatedSnapshot,
+            animatingDifferences: withAnimation
+        )
     }
 }
 
 // MARK: - UICollectionViewDelegate
 
-extension FavoritesViewController: UICollectionViewDelegate {}
-
-// MARK: - UICollectionViewDataSource
-
-extension FavoritesViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        Constants.numberOfItemsInSection
+extension FavoritesViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        //        guard let presenter else { return }
+        //        presenter.jobs[indexPath.item].isSelected.toggle()
+        //        updateDataSnapshot()
+        //        saveUserSettings()
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        collectionView.dequeueReusableCell(withReuseIdentifier: EpisodeCell.identifier, for: indexPath)
+    
+    //    func getReservedJobs() -> EpisodeModels {
+    //        guard let jobs = presenter?.jobs else { return JobsModel() }
+    //        return jobs.filter { $0.isSelected }
+    //    }
+}
+
+// MARK: - Loading data with network service
+
+extension FavoritesViewController: FavoritesViewProtocol {
+    func favoritesLoaded() {
+        guard let presenter else { return }
+        createDataSnapshot( items: presenter.favorites)
     }
     
-//    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-//        guard
-//            let header = collectionView.dequeueReusableSupplementaryView(
-//                ofKind: kind,
-//                withReuseIdentifier: .sectionsHeader,
-//                for: indexPath
-//            ) as? SectionsHeader
-//        else { return UICollectionReusableView() }
-//        
-//        header.set(titleText: "Favorites")
-//        return header
+//    func imageLoaded() {
+//        DispatchQueue.main.async {
+//            self.updateDataSnapshot()
+//        }
+//    }
+//    
+//    func failure(error: Error) {
+//        print(error.localizedDescription)
 //    }
 }
 
-// MARK: - Composition layout methods
+// MARK: - Handle actions methods
 
 private extension FavoritesViewController {
-    func createLayout() -> UICollectionViewCompositionalLayout {
-        let layoutSection = CustomLayoutSection.shared.create(with: SectionSettings())
-        return UICollectionViewCompositionalLayout(section: layoutSection)
-    }
-}
-
-// MARK: - Setup Hierarchy
-
-private extension FavoritesViewController {
-    func setupHierarchy() {
-//        view.addSubview(allGroupsTable)
-//        view.addSubview(favoriteGroupsCollection)
-    }
-}
-
-// MARK: - Setup Layout
-
-private extension FavoritesViewController {
-    func setupLayout() {
-//        allGroupsTable.snp.makeConstraints {
-//            $0.top.left.right.equalTo(view.safeAreaLayoutGuide)
-//            $0.height.equalTo(Constants.tableHeight)
-//        }
-//        
-//        favoriteGroupsCollection.snp.makeConstraints {
-//            $0.left.right.bottom.equalTo(view.safeAreaLayoutGuide)
-//            $0.top.equalTo(allGroupsTable.snp.bottom).offset(Constants.CollectionTopConstrain)
-//        }
-    }
-}
-
-// MARK: - Setup View
-
-private extension FavoritesViewController {
-    func setupView() {
-        view.backgroundColor = .white
-    }
-}
-
-// MARK: - Setup navigation bar
-
-private extension FavoritesViewController {
-    func setupNavigationBar() {
-        navigationItem.title = Constants.navigationTitle
-        navigationItem.searchController = searchController
-        
-        setupRightBarButtonItems()
-    }
-}
-
-// MARK: - Setup right items of NavBar
-
-private extension FavoritesViewController {
-    func setupRightBarButtonItems() {
-        let editButton = UIBarButtonItem(
-            image: UIImage(systemName: "text.justify"),
-            style: .plain,
-            target: self,
-            action: nil
-        )
-        
-        let favoriteButton = UIBarButtonItem(
-            image: UIImage(systemName: "plus"),
-            style: .plain,
-            target: self,
-            action: #selector(showAddNewGroupForm)
-        )
-        
-        navigationItem.rightBarButtonItems = [favoriteButton, editButton]
-    }
-}
-
-// MARK: - Alert methods
-
-private extension FavoritesViewController {
-    @objc func showAddNewGroupForm() {
-        let alert = UIAlertController(
-            title: "Add new group",
-            message: nil ,
-            preferredStyle: .alert
-        )
-        
-        alert.addTextField { textField in
-            textField.placeholder = "Enter name for group"
-            textField.clearButtonMode = .whileEditing
-        }
-        
-        let okAction = UIAlertAction(
-            title: "OK",
-            style: .default
-        ) { _ in
-            let _ = alert.textFields?.first
-            // TODO: Add action behaving
-        }
-        
-        let cancelAction = UIAlertAction(
-            title: "Cancel",
-            style: .destructive
-        ) { _ in }
-        
-        [okAction, cancelAction].forEach { alert.addAction($0) }
-        present(alert, animated: true)
-    }
+    
+    //    @objc func reserveButtonPressed() {
+    //        showSumSalaryAlert()
+    //    }
+    //
+    //    func showSumSalaryAlert() {
+    //        let reservedJobs = getReservedJobs().map { $0.salary }.reduce( 0, + )
+    //
+    //        let message = "Вы заработали \(String(format: "%.2f", reservedJobs)) рублей"
+    //        let alert = UIAlertController(title: "", message: message, preferredStyle: .alert)
+    //        let okAction = UIAlertAction(title: "Ок", style: .default, handler: nil)
+    //        alert.addAction(okAction)
+    //        present(alert, animated: true)
+    //    }
 }
 
 // MARK: - Constants
 
 private enum Constants {
-    static let navigationTitle = "Categories"
-    
-    static let tableRowHeight: CGFloat = 80
-    static let numberRowInSection = 1
-    static let tableHeight: CGFloat = 80
-    
-    static let tableCellText = "All my group"
-    static let tableCellImage = "phone"
-    
-    static let CollectionTopConstrain: CGFloat = 16
-    static let numberOfItemsInSection = 25
-    
-    static let headerWidth: CGFloat = 0.93
-    static let headerHeight: CGFloat = 30
-    static let itemWidth: CGFloat = 100
-    static let itemHeight: CGFloat = 100
-    static let absoluteViewWidth: CGFloat = 1
-    static let absoluteViewHeight: CGFloat = 1
-    static let countGroupInHeight: CGFloat = 4
-    static let groupHeightOffset: CGFloat = 1.5
-    
-    static let sectionInterGroupSpacing: CGFloat = -35
+    static var indentFromSuperView: CGFloat = 20
+    static var layoutSectionInset: CGFloat = 10
+    static let cellHeight: CGFloat = 105
 }
 
-private extension String {
-    static let myCategoriesCell = "myCategoriesCell"
-}
+

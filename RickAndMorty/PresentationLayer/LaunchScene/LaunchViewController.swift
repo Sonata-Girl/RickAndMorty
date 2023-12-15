@@ -8,7 +8,7 @@
 import UIKit
 
 protocol LaunchViewProtocol {
-    func startAnimate()
+    func startAnimate(with duration: Int)
 }
 
 final class LaunchViewController: UIViewController {
@@ -43,7 +43,6 @@ final class LaunchViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        startAnimate()
     }
 }
 
@@ -94,12 +93,10 @@ private extension LaunchViewController {
 }
 
 extension LaunchViewController: LaunchViewProtocol {
-    func startAnimate() {
-        UIView.animate(withDuration: 3) {
+    func startAnimate(with duration: Int) {
+        UIView.animate(withDuration: TimeInterval(duration)) {
             self.launchLogo.transform = CGAffineTransform(rotationAngle: .pi)
             self.launchLogo.transform = CGAffineTransform(rotationAngle: .pi * 2)
-//        } completion: { _ in
-//            self.presenter?.goToMainViewController()
         }
     }
 }

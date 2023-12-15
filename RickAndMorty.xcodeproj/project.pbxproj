@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		672B9C7E2B2B6B96004D7B68 /* CharacterDto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C7D2B2B6B96004D7B68 /* CharacterDto.swift */; };
+		672B9C802B2B6DA0004D7B68 /* CharacterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C7F2B2B6DA0004D7B68 /* CharacterModel.swift */; };
+		672B9C822B2B705F004D7B68 /* ErrorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C812B2B705F004D7B68 /* ErrorTypes.swift */; };
 		67F3E5412B28451A0067D505 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5402B28451A0067D505 /* AppDelegate.swift */; };
 		67F3E5452B28451A0067D505 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5442B28451A0067D505 /* MainViewController.swift */; };
 		67F3E54A2B28451B0067D505 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67F3E5492B28451B0067D505 /* Assets.xcassets */; };
@@ -32,6 +35,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		672B9C7D2B2B6B96004D7B68 /* CharacterDto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterDto.swift; sourceTree = "<group>"; };
+		672B9C7F2B2B6DA0004D7B68 /* CharacterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterModel.swift; sourceTree = "<group>"; };
+		672B9C812B2B705F004D7B68 /* ErrorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorTypes.swift; sourceTree = "<group>"; };
 		67F3E53D2B28451A0067D505 /* RickAndMorty.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RickAndMorty.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67F3E5402B28451A0067D505 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		67F3E5442B28451A0067D505 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
@@ -171,6 +177,8 @@
 			children = (
 				67F3E5692B290EF60067D505 /* EpisodeDto.swift */,
 				67F3E56D2B2913E80067D505 /* EpisodeModel.swift */,
+				672B9C7D2B2B6B96004D7B68 /* CharacterDto.swift */,
+				672B9C7F2B2B6DA0004D7B68 /* CharacterModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -179,6 +187,7 @@
 			isa = PBXGroup;
 			children = (
 				67F3E5702B298ED50067D505 /* NetworkService.swift */,
+				672B9C812B2B705F004D7B68 /* ErrorTypes.swift */,
 				67F3E5722B2994E50067D505 /* ImageDataWrapper.swift */,
 			);
 			path = NetworkService;
@@ -196,8 +205,8 @@
 		67F3E57C2B29B99F0067D505 /* FaroritesScene */ = {
 			isa = PBXGroup;
 			children = (
-				67F3E57D2B29B9C80067D505 /* FavoritesViewController.swift */,
 				67F3E57F2B2A2BB40067D505 /* FavoritesVCBuilder.swift */,
+				67F3E57D2B29B9C80067D505 /* FavoritesViewController.swift */,
 				67F3E5812B2A2BD10067D505 /* FavoritesViewPresenter.swift */,
 			);
 			path = FaroritesScene;
@@ -287,14 +296,17 @@
 				67F3E5572B285AA60067D505 /* LaunchViewController.swift in Sources */,
 				67F3E56C2B290F3E0067D505 /* MainViewPresenter.swift in Sources */,
 				67F3E5852B2A2D100067D505 /* CustomLayoutSection.swift in Sources */,
+				672B9C822B2B705F004D7B68 /* ErrorTypes.swift in Sources */,
 				67F3E5412B28451A0067D505 /* AppDelegate.swift in Sources */,
 				67F3E5642B28F8DE0067D505 /* EpisodeCell.swift in Sources */,
+				672B9C7E2B2B6B96004D7B68 /* CharacterDto.swift in Sources */,
 				67F3E56E2B2913E80067D505 /* EpisodeModel.swift in Sources */,
 				67F3E5672B28FB5D0067D505 /* PaddingLabel.swift in Sources */,
 				67F3E57E2B29B9C80067D505 /* FavoritesViewController.swift in Sources */,
 				67F3E56A2B290EF60067D505 /* EpisodeDto.swift in Sources */,
 				67F3E5732B2994E50067D505 /* ImageDataWrapper.swift in Sources */,
 				67F3E5762B299F270067D505 /* DetailVCBulder.swift in Sources */,
+				672B9C802B2B6DA0004D7B68 /* CharacterModel.swift in Sources */,
 				67F3E55D2B2898AB0067D505 /* MainVCBuilder.swift in Sources */,
 				67F3E55B2B2898560067D505 /* Router.swift in Sources */,
 				67F3E5802B2A2BB50067D505 /* FavoritesVCBuilder.swift in Sources */,

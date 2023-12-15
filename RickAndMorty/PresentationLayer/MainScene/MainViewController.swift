@@ -58,7 +58,7 @@ final class MainViewController: UIViewController {
         configureNavigationController()
         setupDataSource()
         
-//        presenter?.getJobs()
+        presenter?.getEpisodes()
     }
 
     private func saveUserSettings() {
@@ -95,29 +95,6 @@ private extension MainViewController {
             episodesCollectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             episodesCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-        
-//        NSLayoutConstraint.activate([
-//            reserveView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-//            reserveView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-//            reserveView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-//            reserveView.heightAnchor.constraint(equalToConstant: Constants.cellHeight)
-//        ])
-        
-//        NSLayoutConstraint.activate([
-//            reserveButton.topAnchor.constraint(
-//                equalTo: reserveView.topAnchor,
-//                constant: Constants.indentFromSuperView
-//            ),
-//            reserveButton.leadingAnchor.constraint(
-//                equalTo: reserveView.leadingAnchor,
-//                constant: Constants.indentFromSuperView
-//            ),
-//            view.safeAreaLayoutGuide.trailingAnchor.constraint(
-//                equalTo: reserveButton.trailingAnchor,
-//                constant: Constants.indentFromSuperView
-//            ),
-//            reserveButton.heightAnchor.constraint(equalTo: reserveView.heightAnchor, multiplier: 0.4)
-//        ])
     }
 }
 
@@ -160,30 +137,7 @@ private extension MainViewController {
 
 private extension MainViewController {
     func createLayout() -> UICollectionViewCompositionalLayout {
-        let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1),
-            heightDimension: .absolute(Constants.cellHeight)
-        )
-
-        let layoutItem = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1),
-            heightDimension: .absolute(Constants.cellHeight)
-        )
-        let layoutGroup = NSCollectionLayoutGroup.horizontal(
-            layoutSize: groupSize,
-            subitems: [layoutItem]
-        )
-        
-        let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
-        layoutSection.contentInsets = .init(
-            top: Constants.layoutSectionInset,
-            leading: Constants.layoutSectionInset,
-            bottom: Constants.cellHeight,
-            trailing: Constants.layoutSectionInset
-        )
-        layoutSection.interGroupSpacing = Constants.layoutSectionInset
+        let layoutSection = CustomLayoutSection.shared.create()
         return UICollectionViewCompositionalLayout(section: layoutSection)
     }
 }
@@ -201,16 +155,19 @@ private extension MainViewController {
                 for: indexPath
             ) as? EpisodeCell else { return EpisodeCell() }
             
+            #warning("clear")
 //            let jobs = self.isFiltering ? presenter.filteredJobs : presenter.jobs
-//            let item = jobs[indexPath.item]
-//            
-//            if item.logoData == nil {
-//                presenter.loadImage(
-//                    jobModel: item,
-//                    indexItem: indexPath.item
-//                )
-//            }
-//            cell.configureCell(jobModel: item)
+            let episodes = presenter.episodes
+            let item = episodes[indexPath.item]
+            
+            if item.character == nil {
+                presenter.getCharacter(
+                    characterUrl: item.characterUrl,
+                    episodeIndex: indexPath.item
+                )
+            }
+            
+            cell.configureCell(episodeModel: item)
             return cell
         }
     }
@@ -229,9 +186,9 @@ private extension MainViewController {
         guard let presenter,
             var updatedSnapshot = dataSource?.snapshot() else { return }
         if isSearchBarEmpty {
-//            updatedSnapshot.reloadItems(presenter.jobs)
+            updatedSnapshot.reloadItems(presenter.episodes)
         } else {
-//            updatedSnapshot.reloadItems(presenter.filteredJobs)
+            updatedSnapshot.reloadItems(presenter.filteredEpisodes)
         }
         self.dataSource?.apply(
             updatedSnapshot,
@@ -250,7 +207,17 @@ extension MainViewController: UICollectionViewDelegate {
 //        saveUserSettings()
     }
 
-    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        let lastItem = collectionView.numberOfItems(inSection: 0) - 1
+        guard indexPath.item == lastItem else { return }
+
+        guard 
+            let presenter = presenter,
+            let _ = presenter.pageInfo?.next
+        else { return }
+        
+        presenter.subloadEpisodes()
+    }
 //    func getReservedJobs() -> EpisodeModels {
 //        guard let jobs = presenter?.jobs else { return JobsModel() }
 //        return jobs.filter { $0.isSelected }
@@ -261,13 +228,15 @@ extension MainViewController: UICollectionViewDelegate {
 
 extension MainViewController: MainViewProtocol {
     func episodesLoaded() {
-//        guard let presenter else { return }
-//        createDataSnapshot( items: presenter.jobs)
+        guard let presenter else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.createDataSnapshot(items: presenter.episodes)
+        }
     }
     
-    func imageLoaded() {
-        DispatchQueue.main.async {
-            self.updateDataSnapshot()
+    func characterLoaded() {
+        DispatchQueue.main.async { [weak self] in
+            self?.updateDataSnapshot()
         }
     }
     
@@ -300,9 +269,6 @@ private extension MainViewController {
 private enum Constants {
     static var indentFromSuperView: CGFloat = 20
     static var layoutSectionInset: CGFloat = 10
-    static let cellHeight: CGFloat = 105
-    
-    static var defaultReserveButtonTitle = "Выберите подработки"
 }
 
 

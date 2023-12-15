@@ -11,14 +11,12 @@ import Foundation
 
 struct EpisodeModel: Hashable, Identifiable {
     let id: Int
-//    let logo: URL?
-//    let profession: String
-//    let employer: String
-//    let salary: Double
-//    let date: String
-//    var isSelected: Bool
-//    var logoData: Data?
-   
+    let episodeImageUrl: URL?
+    var isFavorite: Bool
+    let episodeNumber: String
+    var characterUrl: URL
+    var character: CharacterModel?
+    
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
@@ -31,15 +29,16 @@ struct EpisodeModel: Hashable, Identifiable {
 // MARK: - Convert from dto method
 
 extension EpisodeModel {
-    init(from dto: EpisodeDto, logoData: Data?) {
+    init(from dto: EpisodeDto
+//         episodeImageData: Data?
+//         characterModel: CharacterModel
+    ){
         self.id = dto.id
-//        self.logo = dto.logo
-//        self.profession = dto.profession
-//        self.employer = dto.employer
-//        self.salary = dto.salary
-//        self.date = dto.date
-//        self.logoData = logoData
-//        self.isSelected = false
+        self.episodeImageUrl = dto.url
+        self.episodeNumber = "\(dto.name) | \(dto.episode)"
+        self.isFavorite = false
+        self.characterUrl = dto.character
+        self.character = nil
     }
 }
 
