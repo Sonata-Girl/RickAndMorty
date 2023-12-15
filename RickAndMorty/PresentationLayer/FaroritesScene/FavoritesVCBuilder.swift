@@ -14,7 +14,7 @@ protocol FavoritesVCBuilderProtocol {
 final class FavoritesVCBuilder: FavoritesVCBuilderProtocol {
     func createFavoritesViewModule(router: RouterProtocol) -> FavoritesViewController {
         let view = FavoritesViewController()
-        let networkService = NetworkService()
+        let networkService = NetworkService.shared
         let presenter = FavoritesViewPresenter(view: view, networkManager: networkService, router: router)
         view.presenter = presenter
 

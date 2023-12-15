@@ -14,7 +14,7 @@ protocol MainVCBuilderProtocol {
 final class MainVCBuilder: MainVCBuilderProtocol {
     func createMainViewModule(router: RouterProtocol) -> MainViewController {
         let view = MainViewController()
-        let networkService = NetworkService()
+        let networkService = NetworkService.shared
         let presenter = MainViewPresenter(view: view, networkManager: networkService, router: router)
         view.presenter = presenter
 

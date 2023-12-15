@@ -25,21 +25,15 @@ final class TabBarController: UITabBarController {
     }
     
     private func setTabBarAppearance() {
-        view.backgroundColor = .systemGray5
-//        tabBar.tintColor = .systemOrange
-//        tabBar.isTranslucent = false
-//        tabBar.tintColor = .black // выделенный элемент
-//        tabBar.unselectedItemTintColor = .black
+        view.backgroundColor = .white
        
         let shadowLayer = CALayer()
-        shadowLayer.frame = CGRect(x: 0, y: 0, width: tabBar.frame.width, height: 0.5)
-        shadowLayer.backgroundColor = UIColor.gray.withAlphaComponent(0.5).cgColor
-        shadowLayer.shadowColor = UIColor.black.cgColor
-        shadowLayer.shadowOffset = CGSize(width: 0, height: -1)
-        shadowLayer.shadowOpacity = 1
+        shadowLayer.frame = CGRect(x: 0, y: 0, width: tabBar.frame.width, height: 1)
+        shadowLayer.backgroundColor = UIColor.white.cgColor
+        shadowLayer.shadowColor = UIColor.gray.cgColor
+        shadowLayer.shadowOffset = CGSize(width: 0, height: -2)
+        shadowLayer.shadowOpacity = 0.5
         shadowLayer.shadowRadius = 1
-
-        // Добавление слоя на tabBar
         tabBar.layer.addSublayer(shadowLayer)
     }
     

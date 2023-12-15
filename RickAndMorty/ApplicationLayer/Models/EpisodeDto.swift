@@ -9,29 +9,33 @@ import Foundation
 
 // MARK: - Welcome
 struct EpisodesDto: Decodable {
-    let info: Info
+    let info: PageInfo
     let results: [EpisodeDto]
 }
 
 // MARK: - Info
-struct Info: Decodable {
+struct PageInfo: Decodable {
     let count, pages: Int
-    let next: String
-//    let prev: JSONNull?
+    let next: URL?
+    let prev: URL?
+    
+    init(from pageInfo: PageInfo) {
+        self.count = pageInfo.count
+        self.pages = pageInfo.pages
+        self.next = pageInfo.next
+        self.prev = pageInfo.prev
+    }
 }
 
 // MARK: - Result
 struct EpisodeDto: Decodable {
     let id: Int
     let name, airDate, episode: String
-    let characters: [String]
-    let url: String
+    let characters: [URL]
+    let url: URL
     let created: String
-
-    enum CodingKeys: String, CodingKey {
-        case id, name
-        case airDate = "air_date"
-        case episode, characters, url, created
+    var character: URL {
+        characters.randomElement() ?? characters[0]
     }
 }
 
@@ -39,7 +43,7 @@ struct EpisodeDto: Decodable {
 
 extension EpisodeDto {
     var model: EpisodeModel {
-        .init(from: self, logoData: nil)
+        .init(from: self)
     }
 }
 

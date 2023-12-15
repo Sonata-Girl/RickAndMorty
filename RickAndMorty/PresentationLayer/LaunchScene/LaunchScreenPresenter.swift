@@ -8,26 +8,26 @@
 import UIKit
 
 protocol LaunchScreenPresenterProtocol {
-    func present()
+    func present(with duration: Int)
     func dismiss(completion: (() -> Void)?)
 }
 
 final class LaunchScreenPresenter: LaunchScreenPresenterProtocol {
     var view: LaunchViewProtocol?
     
-    private var foregroundLaunchWindow: UIWindow? = {
+    private lazy var foregroundLaunchWindow: UIWindow? = {
         let launchWindow = UIWindow()
         let launchVC = LaunchViewController()
         
         launchWindow.windowLevel = .normal + 1
         launchWindow.rootViewController = launchVC
-        
+        self.view = launchVC
         return launchWindow
     }()
     
-    func present() {
+    func present(with duration: Int) {
         foregroundLaunchWindow?.isHidden = false
-        self.view?.startAnimate()
+        self.view?.startAnimate(with: duration)
     }
     
     func dismiss(completion: (() -> Void)?) {

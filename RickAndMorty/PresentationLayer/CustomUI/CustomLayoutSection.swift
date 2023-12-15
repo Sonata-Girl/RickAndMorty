@@ -33,7 +33,7 @@ final class CustomLayoutSection {
         
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
-            heightDimension: .fractionalWidth(1)
+            heightDimension: .absolute(420)
         )
         let layoutGroup = NSCollectionLayoutGroup.horizontal(
             layoutSize: groupSize,

@@ -12,7 +12,7 @@ import Foundation
 
 protocol MainViewProtocol: AnyObject {
     func episodesLoaded()
-    func imageLoaded()
+    func characterLoaded()
     func failure(error: Error)
 }
 
@@ -23,10 +23,13 @@ protocol MainPresenterProtocol: AnyObject {
          networkManager: NetworkServiceProtocol,
          router: RouterProtocol
     )
+    var pageInfo: PageInfo? { get set }
     var episodes: EpisodeModels { get set }
     var filteredEpisodes: EpisodeModels  { get set }
     func getEpisodes()
-    //    func loadImage(jobModel: EpisodeModel, indexItem: Int)
+    func subloadEpisodes()
+    func getCharacter(characterUrl: URL, episodeIndex: Int)
+    func loadCharacterImage(characterImageUrl: URL, indexItem: Int)
     //    func saveSelectedCells(selectedCells: EpisodeModels)
 }
 
@@ -38,8 +41,9 @@ final class MainViewPresenter: MainPresenterProtocol {
     var router: RouterProtocol?
     var episodes: EpisodeModels = []
     var filteredEpisodes: EpisodeModels = []
-    //        var savedSelectedCells = SelectedCellsSavingModel()
-    
+    var pageNumber = 1
+    var pageInfo: PageInfo?
+ 
     required init(
         view: MainViewProtocol,
         networkManager: NetworkServiceProtocol,
@@ -54,12 +58,14 @@ final class MainViewPresenter: MainPresenterProtocol {
     // MARK: Loading data methods
     
     func getEpisodes() {
-        networkManager?.getEpisodes() { [weak self] result in
+        networkManager?.getEpisodes(page: pageNumber) { [weak self] result in
             guard let self else { return }
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
                 switch result {
-                    case .success(let episodes):
-                        self.episodes += episodes.models
+                    case .success(let episodesDto):
+                        pageInfo = PageInfo(from: episodesDto.info)
+                        self.episodes += episodesDto.results.models
                         //                        self.loadSelectedCellsSettings()
                         self.view?.episodesLoaded()
                     case .failure(let error):
@@ -69,18 +75,35 @@ final class MainViewPresenter: MainPresenterProtocol {
         }
     }
     
-    //    func loadImage(jobModel: JobModel, indexItem: Int) {
-    //        guard let logoUrl = jobModel.logo else { return }
-    //        networkManager?.loadImageData(from: logoUrl) { [weak self] result in
-    //            guard let self,
-    //                  let imageData = result else { return }
-    //            DispatchQueue.main.async {
-    //                self.jobs[indexItem].logoData = imageData
-    //                self.view?.imageLoaded()
-    //            }
-    //        }
-    //    }
+    func subloadEpisodes() {
+        pageNumber += 1
+        getEpisodes()
+    }
     
+    func getCharacter(characterUrl: URL, episodeIndex: Int) {
+        networkManager?.getCharacter(characterUrl: characterUrl) { [weak self] result in
+            guard let self else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                switch result {
+                    case .success(let characterDto):
+                        self.episodes[episodeIndex].character = characterDto.model
+                        loadCharacterImage(characterImageUrl: characterDto.model.imageUrl, indexItem: episodeIndex)
+                    case .failure(let error):
+                        self.view?.failure(error: error)
+                }
+            }
+        }
+    }
+    
+    func loadCharacterImage(characterImageUrl: URL, indexItem: Int) {
+        networkManager?.loadImageData(from: characterImageUrl) { [weak self] result in
+            guard let self,
+                  let imageData = result else { return }
+            self.episodes[indexItem].character?.imageData = imageData
+            self.view?.characterLoaded()
+        }
+    }
     // MARK: UserDefaults methods
     
     private func loadUserSaves() {
