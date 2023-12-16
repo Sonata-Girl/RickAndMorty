@@ -45,14 +45,14 @@ final class TabBarController: UITabBarController {
             generateVC(
                 viewController: mainVC,
                 title: "",
-                image: UIImage(named: "episodes"),
-                selectedImage: UIImage(named: "episodesSelect")
+                image: UIImage(named: "Episodes"),
+                selectedImage: UIImage(named: "EpisodesSelect")
             ),
             generateVC(
                 viewController: favoritesVC,
                 title: "",
-                image: UIImage(named: "favorites"),
-                selectedImage: UIImage(named: "favoritesSelect")
+                image: UIImage(named: "Favorites"),
+                selectedImage: UIImage(named: "FavoritesSelect")
             ),
        ]
     }

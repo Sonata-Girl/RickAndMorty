@@ -12,10 +12,10 @@ import Foundation
 struct EpisodeModel: Hashable, Identifiable {
     let id: Int
     let episodeUrl: URL?
-    var isFavorite: Bool
     let episodeNumber: String
     var characterUrl: URL
     var character: CharacterModel?
+    var isFavorite: Bool
     
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
@@ -39,18 +39,18 @@ extension EpisodeModel {
     }
 }
 
-extension EpisodeModel {
-    init(from cache: CacheEpisodeWrapper){
-        self.id = cache.id
-        self.episodeUrl = cache.episodeUrl
-        self.episodeNumber = cache.episodeNumber
-        self.isFavorite = cache.isFavorite
-        self.characterUrl = cache.characterUrl
-        if let characterWrapped = cache.character {
-            self.character = CharacterModel(from: characterWrapped)
-        }
-    }
-}
+//extension EpisodeModel {
+//    init(from cache: CacheEpisodeWrapper){
+//        self.id = cache.id
+//        self.episodeUrl = cache.episodeUrl
+//        self.episodeNumber = cache.episodeNumber
+//        self.isFavorite = cache.isFavorite
+//        self.characterUrl = cache.characterUrl
+//        if let characterWrapped = cache.character {
+//            self.character = CharacterModel(from: characterWrapped)
+//        }
+//    }
+//}
 
 // MARK: - Date convert methods
 typealias EpisodeModels = [EpisodeModel]

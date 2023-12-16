@@ -38,22 +38,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 // - MARK: Build scenes for app
 
 private extension AppDelegate {
-     func buildingAppScenes() -> UITabBarController {
+    func buildingAppScenes() -> UITabBarController {
         let tabBarController = TabBarController()
-    
+        
         let mainVCBuilder = MainVCBuilder()
         let favoritesVCBuilder = FavoritesVCBuilder()
         let detailVCBuilder = DetailVCBuilder()
         let navigationController = UINavigationController()
-        let router = Router(
+        let routerMainVC = RouterMainVC(
             mainVCBuilder: mainVCBuilder,
+            detailVCBuilder: detailVCBuilder,
+            rootController: navigationController
+        )
+        let routerFavoriteVC = RouterFavoritesVC(
             favoritesVCBuilder: favoritesVCBuilder,
             detailVCBuilder: detailVCBuilder,
             rootController: navigationController
         )
         tabBarController.configureTabBar(
-            mainVC: mainVCBuilder.createMainViewModule(router: router),
-            favoritesVC: favoritesVCBuilder.createFavoritesViewModule(router: router)
+            mainVC: mainVCBuilder.createMainViewModule(router: routerMainVC),
+            favoritesVC: favoritesVCBuilder.createFavoritesViewModule(router: routerFavoriteVC)
         )
         
         return tabBarController

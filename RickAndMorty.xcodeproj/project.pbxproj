@@ -11,13 +11,17 @@
 		672B9C802B2B6DA0004D7B68 /* CharacterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C7F2B2B6DA0004D7B68 /* CharacterModel.swift */; };
 		672B9C822B2B705F004D7B68 /* ErrorTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C812B2B705F004D7B68 /* ErrorTypes.swift */; };
 		672B9C842B2D057C004D7B68 /* CacheCharacterWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C832B2D057C004D7B68 /* CacheCharacterWrapper.swift */; };
+		672B9C862B2E0957004D7B68 /* RouterFavoritesVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C852B2E0957004D7B68 /* RouterFavoritesVC.swift */; };
+		672B9C8A2B2E0CEB004D7B68 /* RouterMainVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C892B2E0CEB004D7B68 /* RouterMainVC.swift */; };
+		672B9C8C2B2E1249004D7B68 /* DetailViewPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C8B2B2E1249004D7B68 /* DetailViewPresenter.swift */; };
+		672B9C8F2B2E151C004D7B68 /* DetailViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9C8E2B2E151C004D7B68 /* DetailViewCell.swift */; };
 		67F3E5412B28451A0067D505 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5402B28451A0067D505 /* AppDelegate.swift */; };
 		67F3E5452B28451A0067D505 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5442B28451A0067D505 /* MainViewController.swift */; };
 		67F3E54A2B28451B0067D505 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67F3E5492B28451B0067D505 /* Assets.xcassets */; };
 		67F3E54D2B28451B0067D505 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 67F3E54B2B28451B0067D505 /* LaunchScreen.storyboard */; };
 		67F3E5572B285AA60067D505 /* LaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5562B285AA60067D505 /* LaunchViewController.swift */; };
 		67F3E5592B2884080067D505 /* LaunchScreenPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5582B2884080067D505 /* LaunchScreenPresenter.swift */; };
-		67F3E55B2B2898560067D505 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E55A2B2898560067D505 /* Router.swift */; };
+		67F3E55B2B2898560067D505 /* RouterContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E55A2B2898560067D505 /* RouterContracts.swift */; };
 		67F3E55D2B2898AB0067D505 /* MainVCBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E55C2B2898AB0067D505 /* MainVCBuilder.swift */; };
 		67F3E5642B28F8DE0067D505 /* EpisodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5632B28F8DE0067D505 /* EpisodeCell.swift */; };
 		67F3E5672B28FB5D0067D505 /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5662B28FB5D0067D505 /* PaddingLabel.swift */; };
@@ -40,6 +44,10 @@
 		672B9C7F2B2B6DA0004D7B68 /* CharacterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterModel.swift; sourceTree = "<group>"; };
 		672B9C812B2B705F004D7B68 /* ErrorTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorTypes.swift; sourceTree = "<group>"; };
 		672B9C832B2D057C004D7B68 /* CacheCharacterWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheCharacterWrapper.swift; sourceTree = "<group>"; };
+		672B9C852B2E0957004D7B68 /* RouterFavoritesVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterFavoritesVC.swift; sourceTree = "<group>"; };
+		672B9C892B2E0CEB004D7B68 /* RouterMainVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterMainVC.swift; sourceTree = "<group>"; };
+		672B9C8B2B2E1249004D7B68 /* DetailViewPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewPresenter.swift; sourceTree = "<group>"; };
+		672B9C8E2B2E151C004D7B68 /* DetailViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewCell.swift; sourceTree = "<group>"; };
 		67F3E53D2B28451A0067D505 /* RickAndMorty.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RickAndMorty.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67F3E5402B28451A0067D505 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		67F3E5442B28451A0067D505 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
@@ -48,7 +56,7 @@
 		67F3E54E2B28451B0067D505 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		67F3E5562B285AA60067D505 /* LaunchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchViewController.swift; sourceTree = "<group>"; };
 		67F3E5582B2884080067D505 /* LaunchScreenPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchScreenPresenter.swift; sourceTree = "<group>"; };
-		67F3E55A2B2898560067D505 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
+		67F3E55A2B2898560067D505 /* RouterContracts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterContracts.swift; sourceTree = "<group>"; };
 		67F3E55C2B2898AB0067D505 /* MainVCBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainVCBuilder.swift; sourceTree = "<group>"; };
 		67F3E5632B28F8DE0067D505 /* EpisodeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeCell.swift; sourceTree = "<group>"; };
 		67F3E5662B28FB5D0067D505 /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
@@ -90,13 +98,12 @@
 		672B9C792B2A4136004D7B68 /* PresentationLayer */ = {
 			isa = PBXGroup;
 			children = (
+				672B9C872B2E0C7D004D7B68 /* Routers */,
 				67F3E5832B2A2CFC0067D505 /* CustomUI */,
-				67F3E55A2B2898560067D505 /* Router.swift */,
 				67F3E5602B28F6F80067D505 /* LaunchScene */,
 				67F3E5612B28F7FA0067D505 /* MainScene */,
 				67F3E57C2B29B99F0067D505 /* FaroritesScene */,
 				67F3E5742B299EE20067D505 /* DetailScene */,
-				672B9C7A2B2A4167004D7B68 /* Cells */,
 			);
 			path = PresentationLayer;
 			sourceTree = "<group>";
@@ -105,6 +112,24 @@
 			isa = PBXGroup;
 			children = (
 				67F3E5632B28F8DE0067D505 /* EpisodeCell.swift */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		672B9C872B2E0C7D004D7B68 /* Routers */ = {
+			isa = PBXGroup;
+			children = (
+				67F3E55A2B2898560067D505 /* RouterContracts.swift */,
+				672B9C892B2E0CEB004D7B68 /* RouterMainVC.swift */,
+				672B9C852B2E0957004D7B68 /* RouterFavoritesVC.swift */,
+			);
+			path = Routers;
+			sourceTree = "<group>";
+		};
+		672B9C8D2B2E1502004D7B68 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				672B9C8E2B2E151C004D7B68 /* DetailViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -151,6 +176,7 @@
 				67F3E55C2B2898AB0067D505 /* MainVCBuilder.swift */,
 				67F3E56B2B290F3E0067D505 /* MainViewPresenter.swift */,
 				67F3E5442B28451A0067D505 /* MainViewController.swift */,
+				672B9C7A2B2A4167004D7B68 /* Cells */,
 			);
 			path = MainScene;
 			sourceTree = "<group>";
@@ -199,7 +225,9 @@
 			isa = PBXGroup;
 			children = (
 				67F3E5752B299F270067D505 /* DetailVCBulder.swift */,
+				672B9C8B2B2E1249004D7B68 /* DetailViewPresenter.swift */,
 				67F3E5772B299F740067D505 /* DetailViewController.swift */,
+				672B9C8D2B2E1502004D7B68 /* Cells */,
 			);
 			path = DetailScene;
 			sourceTree = "<group>";
@@ -302,19 +330,23 @@
 				672B9C822B2B705F004D7B68 /* ErrorTypes.swift in Sources */,
 				67F3E5412B28451A0067D505 /* AppDelegate.swift in Sources */,
 				67F3E5642B28F8DE0067D505 /* EpisodeCell.swift in Sources */,
+				672B9C8F2B2E151C004D7B68 /* DetailViewCell.swift in Sources */,
 				672B9C7E2B2B6B96004D7B68 /* CharacterDto.swift in Sources */,
 				67F3E56E2B2913E80067D505 /* EpisodeModel.swift in Sources */,
 				67F3E5672B28FB5D0067D505 /* PaddingLabel.swift in Sources */,
 				67F3E57E2B29B9C80067D505 /* FavoritesViewController.swift in Sources */,
+				672B9C8C2B2E1249004D7B68 /* DetailViewPresenter.swift in Sources */,
 				672B9C842B2D057C004D7B68 /* CacheCharacterWrapper.swift in Sources */,
 				67F3E56A2B290EF60067D505 /* EpisodeDto.swift in Sources */,
 				67F3E5732B2994E50067D505 /* CacheEpisodeWrapper.swift in Sources */,
 				67F3E5762B299F270067D505 /* DetailVCBulder.swift in Sources */,
 				672B9C802B2B6DA0004D7B68 /* CharacterModel.swift in Sources */,
 				67F3E55D2B2898AB0067D505 /* MainVCBuilder.swift in Sources */,
-				67F3E55B2B2898560067D505 /* Router.swift in Sources */,
+				67F3E55B2B2898560067D505 /* RouterContracts.swift in Sources */,
 				67F3E5802B2A2BB50067D505 /* FavoritesVCBuilder.swift in Sources */,
+				672B9C862B2E0957004D7B68 /* RouterFavoritesVC.swift in Sources */,
 				67F3E5782B299F740067D505 /* DetailViewController.swift in Sources */,
+				672B9C8A2B2E0CEB004D7B68 /* RouterMainVC.swift in Sources */,
 				67F3E5712B298ED50067D505 /* NetworkService.swift in Sources */,
 				67F3E5592B2884080067D505 /* LaunchScreenPresenter.swift in Sources */,
 			);

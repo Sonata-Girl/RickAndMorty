@@ -18,6 +18,7 @@ struct CharacterDto: Decodable {
     let origin: Name
     let location: Name
     let image: URL
+    let url: URL
 }
 
 

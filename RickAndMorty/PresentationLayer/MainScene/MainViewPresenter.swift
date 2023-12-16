@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreData
 
 // MARK: - View protocol
 
@@ -23,14 +24,15 @@ protocol MainPresenterProtocol: AnyObject {
          networkManager: NetworkServiceProtocol,
          router: RouterProtocol
     )
-    var pageInfo: PageInfo? { get set }
-    var episodes: EpisodeModels { get set }
-    var filteredEpisodes: EpisodeModels  { get set }
+    var pageInfo: PageInfo? { get }
+    var episodes: EpisodeModels { get }
+    var filteredEpisodes: EpisodeModels  { get }
+    var isSubloading: Bool { get }
     func getEpisodes(subload: Bool)
-    var isSubloading: Bool { get set }
     func startSubloadEpisodes()
     func getCharacter(characterUrl: URL, episodeIndex: Int)
-    func loadCharacterImage(characterImageUrl: URL, indexItem: Int)
+    func didSelectFavoriteCell(at indexCell: Int)
+    func characterImageTapped(at indexCell: Int)
     //    func saveSelectedCells(selectedCells: EpisodeModels)
 }
 
@@ -40,12 +42,13 @@ final class MainViewPresenter: MainPresenterProtocol {
     weak var view: MainViewProtocol?
     let networkManager: NetworkServiceProtocol?
     var router: RouterProtocol?
+//    let context = NSPersistentContainer.viewContext
     var episodes: EpisodeModels = []
     var filteredEpisodes: EpisodeModels = []
     var pageNumber = 1
-    var pageInfo: PageInfo?
     var isSubloading = false
-    private let cacheEpisode = NSCache<NSString, CacheEpisodeWrapper>()
+    var pageInfo: PageInfo?
+    private let cacheCharacter = NSCache<NSString, CacheCharacterWrapper>()
     
     required init(
         view: MainViewProtocol,
@@ -58,22 +61,22 @@ final class MainViewPresenter: MainPresenterProtocol {
         //            loadUserSaves()
     }
 
-    // MARK: Loading data methods
+    // MARK: Loading data method
     
     func getEpisodes(subload: Bool = false) {
         networkManager?.getEpisodes(page: pageNumber) { [weak self] result in
             guard let self else { return }
             switch result {
                 case .success(let episodesDto):
-                    pageInfo = PageInfo(from: episodesDto.info)
+                    self.pageInfo = PageInfo(from: episodesDto.info)
                     self.episodes += episodesDto.results.models
                     //                        self.loadSelectedCellsSettings()
                     self.view?.episodesLoaded()
                 case .failure(let error):
                     self.view?.failure(error: error)
             }
-            isSubloading = subload
         }
+        isSubloading = subload
     }
     
     func startSubloadEpisodes() {
@@ -83,26 +86,21 @@ final class MainViewPresenter: MainPresenterProtocol {
     }
     
     func getCharacter(characterUrl: URL, episodeIndex: Int) {
-        if let episodeUrl = self.episodes[episodeIndex].episodeUrl {
-            if let cachedEpisode = cacheEpisode.object(forKey: episodeUrl.absoluteString as NSString) {
-                if let character = cachedEpisode.character {
-                    self.episodes[episodeIndex].character = CharacterModel(from: character)
-                    return
-                }
-            }
+        if let cachedCharacter = cacheCharacter.object(forKey: characterUrl.absoluteString as NSString) {
+            self.episodes[episodeIndex].character = CharacterModel(from: cachedCharacter)
+            self.view?.characterLoaded()
+            return
         }
         networkManager?.getCharacter(characterUrl: characterUrl) { [weak self] result in
             guard let self else { return }
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                switch result {
-                    case .success(let characterDto):
-                        self.episodes[episodeIndex].character = characterDto.model
-                        loadCharacterImage(characterImageUrl: characterDto.model.imageUrl, indexItem: episodeIndex)
-                    case .failure(let error):
-                        self.view?.failure(error: error)
-                }
+            switch result {
+                case .success(let characterDto):
+                    self.episodes[episodeIndex].character = characterDto.model
+                    loadCharacterImage(characterImageUrl: characterDto.model.imageUrl, indexItem: episodeIndex)
+                case .failure(let error):
+                    self.view?.failure(error: error)
             }
+            
         }
     }
     
@@ -111,13 +109,28 @@ final class MainViewPresenter: MainPresenterProtocol {
             guard let self,
                   let imageData = result else { return }
             self.episodes[indexItem].character?.imageData = imageData
-            if let url = self.episodes[indexItem].episodeUrl {
-                let episodeModelWrapped = CacheEpisodeWrapper(from: self.episodes[indexItem])
-                self.cacheEpisode.setObject(episodeModelWrapped, forKey: url.absoluteString as NSString)
+            if let character = self.episodes[indexItem].character {
+                let characterModelWrapped = CacheCharacterWrapper(from: character)
+                self.cacheCharacter.setObject(characterModelWrapped, forKey: character.url.absoluteString as NSString)
             }
             self.view?.characterLoaded()
         }
     }
+    
+    // MARK: Change data methods
+    
+    func didSelectFavoriteCell(at indexCell: Int) {
+        self.episodes[indexCell].isFavorite.toggle()
+        #warning("todo saving in coredara?")
+        
+        self.view?.characterLoaded()
+    }
+    
+    func characterImageTapped(at indexCell: Int) {
+        guard let character = self.episodes[indexCell].character else { return }
+        router?.showDetailViewController(characterModel: character)
+    }
+    
     // MARK: UserDefaults methods
     
     private func loadUserSaves() {

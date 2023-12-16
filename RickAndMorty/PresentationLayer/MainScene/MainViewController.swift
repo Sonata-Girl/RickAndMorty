@@ -42,7 +42,6 @@ final class MainViewController: UIViewController {
             forCellWithReuseIdentifier: EpisodeCell.identifier
         )
         collectionView.showsVerticalScrollIndicator = false
-//        collectionView.backgroundColor = .appLightGrayColor()
         collectionView.delegate = self
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
@@ -165,7 +164,8 @@ private extension MainViewController {
                 )
             }
             
-            cell.configureCell(episodeModel: item)
+            cell.delegate = self
+            cell.configureCell(episodeModel: item, indexPathCell: indexPath.item)
             return cell
         }
     }
@@ -250,8 +250,15 @@ extension MainViewController: MainViewProtocol {
 
 // MARK: - Handle actions methods
 
-private extension MainViewController {
+extension MainViewController: EpisodeCellDelegate {
     
+    func selectFavoriteCell(at indexCell: Int) {
+        presenter?.didSelectFavoriteCell(at: indexCell)
+    }
+    
+    func characterImageTapped(at indexCell: Int) {
+        presenter?.characterImageTapped(at: indexCell)
+    }
 //    @objc func reserveButtonPressed() {
 //        showSumSalaryAlert()
 //    }

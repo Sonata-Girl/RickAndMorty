@@ -7,8 +7,16 @@
 
 import UIKit
 
+protocol EpisodeCellDelegate: AnyObject {
+    func selectFavoriteCell(at indexCell: Int)
+    func characterImageTapped(at indexCell: Int)
+}
+
 final class EpisodeCell: UICollectionViewCell {
     
+    weak var delegate: EpisodeCellDelegate?
+    var indexCell: Int?
+       
     // MARK: UI elements
     
     private let mainView: UIView = {
@@ -18,13 +26,17 @@ final class EpisodeCell: UICollectionViewCell {
         return view
     }()
     
-    let characterImage: UIImageView = {
+    private lazy var characterImage: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.image = Constants.characterLogoDefault
         imageView.layer.cornerRadius = Constants.lightCornerRadius
         imageView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        let oneTap = UITapGestureRecognizer(target: self, action: #selector(characterImageTapped))
+        oneTap.numberOfTapsRequired = 1
+        imageView.addGestureRecognizer(oneTap)
+        imageView.isUserInteractionEnabled = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -50,7 +62,7 @@ final class EpisodeCell: UICollectionViewCell {
     private let playLabel: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
-        imageView.image = UIImage(named: "play")
+        imageView.image = UIImage(named: "Play")
         imageView.tintColor = .black
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -65,12 +77,13 @@ final class EpisodeCell: UICollectionViewCell {
         return label
     }()
     
-    let favoriteImage: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        imageView.image = Constants.favoriteLogoDefault
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
+    private lazy var favoriteButton: UIButton = {
+        let button = UIButton()
+        button.contentMode = .scaleAspectFit
+        button.setImage(Constants.favoriteLogoDefault, for: .normal)
+        button.addTarget(self, action: #selector(selectedFavoriteCell), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
     // MARK: Init
@@ -89,6 +102,18 @@ final class EpisodeCell: UICollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         setDefaultStateCell()
+    }
+    
+    // MARK: Cell actions
+    
+    @objc private func selectedFavoriteCell() {
+        guard let indexCell else { return }
+        delegate?.selectFavoriteCell(at: indexCell)
+    }
+    
+    @objc private func characterImageTapped() {
+        guard let indexCell else { return }
+        delegate?.characterImageTapped(at: indexCell)
     }
 }
 // MARK: - Configure view
@@ -122,7 +147,7 @@ private extension EpisodeCell {
         
         bottomView.addSubview(playLabel)
         bottomView.addSubview(episodeNumberLabel)
-        bottomView.addSubview(favoriteImage)
+        bottomView.addSubview(favoriteButton)
     }
 }
 
@@ -149,8 +174,14 @@ private extension EpisodeCell {
         
         NSLayoutConstraint.activate([
             characterNameLabel.topAnchor.constraint(equalTo: characterImage.bottomAnchor),
-            characterNameLabel.leadingAnchor.constraint(equalTo: mainView.leadingAnchor, constant: Constants.mediumSpacingItems),
-            mainView.trailingAnchor.constraint(equalTo: characterNameLabel.trailingAnchor, constant: Constants.mediumSpacingItems),
+            characterNameLabel.leadingAnchor.constraint(
+                equalTo: mainView.leadingAnchor,
+                constant: Constants.mediumSpacingItems
+            ),
+            mainView.trailingAnchor.constraint(
+                equalTo: characterNameLabel.trailingAnchor,
+                constant: Constants.mediumSpacingItems
+            ),
          ])
         
         // MARK: Bottom subview constraints
@@ -164,7 +195,10 @@ private extension EpisodeCell {
           ])
         
         NSLayoutConstraint.activate([
-            playLabel.leadingAnchor.constraint(equalTo: bottomView.leadingAnchor, constant: Constants.mediumSpacingItems),
+            playLabel.leadingAnchor.constraint(
+                equalTo: bottomView.leadingAnchor,
+                constant: Constants.mediumSpacingItems
+            ),
             playLabel.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
             playLabel.widthAnchor.constraint(equalToConstant: Constants.smallSizeBottomUI),
             playLabel.heightAnchor.constraint(equalToConstant: Constants.smallSizeBottomUI),
@@ -179,17 +213,17 @@ private extension EpisodeCell {
         ])
 
         NSLayoutConstraint.activate([
-            favoriteImage.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
-            favoriteImage.leadingAnchor.constraint(
+            favoriteButton.centerYAnchor.constraint(equalTo: bottomView.centerYAnchor),
+            favoriteButton.leadingAnchor.constraint(
                 equalTo: episodeNumberLabel.trailingAnchor,
                 constant: Constants.lightSpacingItems
             ),
             bottomView.trailingAnchor.constraint(
-                equalTo: favoriteImage.trailingAnchor,
+                equalTo: favoriteButton.trailingAnchor,
                 constant: Constants.mediumSpacingItems
             ),
-            favoriteImage.widthAnchor.constraint(equalToConstant: Constants.mediumSizeBottomUI),
-            favoriteImage.heightAnchor.constraint(equalToConstant: Constants.mediumSizeBottomUI),
+            favoriteButton.widthAnchor.constraint(equalToConstant: Constants.mediumSizeBottomUI),
+            favoriteButton.heightAnchor.constraint(equalToConstant: Constants.mediumSizeBottomUI),
         ])
     }
 }
@@ -197,7 +231,8 @@ private extension EpisodeCell {
 // MARK: - Configure cell values
 
 extension EpisodeCell {
-    func configureCell(episodeModel: EpisodeModel) {
+    func configureCell(episodeModel: EpisodeModel, indexPathCell: Int) {
+        indexCell = indexPathCell
         characterNameLabel.text = episodeModel.character?.name
         episodeNumberLabel.text = episodeModel.episodeNumber
        
@@ -214,14 +249,18 @@ extension EpisodeCell {
     }
     
     func changeSelectedCellState(selected: Bool) {
-        favoriteImage.image = selected ? UIImage(named: "favoriteSelect") : Constants.favoriteLogoDefault
+        let favoriteImage = selected ? UIImage(named: "FavoriteSelect") : Constants.favoriteLogoDefault
+        favoriteButton.setImage(favoriteImage, for: .normal)
     }
 
     override func prepareForReuse() {
         characterNameLabel.text = nil
         episodeNumberLabel.text = nil
         characterImage.image = Constants.characterLogoDefault
-        favoriteImage.image = Constants.favoriteLogoDefault
+        favoriteButton.setImage(
+            Constants.favoriteLogoDefault,
+            for: .normal
+        )
         characterImage.contentMode = .scaleAspectFit
     }
     
@@ -247,14 +286,9 @@ private enum Constants {
     static var lightSpacingItems: CGFloat = 5
     static var mediumSpacingItems: CGFloat = 20
     
-    static var smallFont: UIFont = .systemFont(ofSize: 15)
     static var lightFont: UIFont = .systemFont(
         ofSize: 20,
         weight: .light
-    )
-   static var regularFont: UIFont = .systemFont(
-        ofSize: 20,
-        weight: .regular
     )
     static var mediumFont: UIFont = .systemFont(
         ofSize: 20,
@@ -262,5 +296,5 @@ private enum Constants {
     )
     
     static var characterLogoDefault = UIImage(named: "NameLogo")
-    static var favoriteLogoDefault = UIImage(named: "favorite")
+    static var favoriteLogoDefault = UIImage(named: "Favorite")
 }

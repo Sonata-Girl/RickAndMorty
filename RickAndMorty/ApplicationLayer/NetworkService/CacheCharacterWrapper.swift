@@ -17,7 +17,8 @@ class CacheCharacterWrapper {
     let location: String
     let imageUrl: URL
     let imageData: Data?
- 
+    let url: URL
+    
     init(from model: CharacterModel) {
         self.id = model.id
         self.name = model.name
@@ -28,5 +29,6 @@ class CacheCharacterWrapper {
         self.location = model.location
         self.imageUrl = model.imageUrl
         self.imageData = model.imageData
+        self.url = model.url
     }
 }
