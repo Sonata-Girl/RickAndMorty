@@ -25,10 +25,11 @@ final class DetailViewController: UIViewController {
     
     private var characterImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.backgroundColor = .lightGray
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 20
+        imageView.layer.borderWidth = 5
+        imageView.layer.cornerRadius = 75
+        imageView.layer.borderColor = UIColor.systemGray5.cgColor
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -37,32 +38,35 @@ final class DetailViewController: UIViewController {
         let button = UIButton()
         button.setBackgroundImage(UIImage(systemName: "camera"), for: .normal)
         button.tintColor = .label
-//        button.addTarget(nil, action: #selector(changePhotoTapped), for: .touchUpInside)
+        button.addTarget(nil, action: #selector(changePhotoTapped), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     private var characterNameLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 15, weight: .light)
+        label.font = UIFont(name: "Roboto-Regular", size: 30)
         label.textColor = .label
-        label.textAlignment = .left
         label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private lazy var detailCharacterTableView: UITableView = {
         let tableView = UITableView()
-        //        tableView.layer.borderColor = UIColor.black.withAlphaComponent(0.1).cgColor
-        tableView.layer.cornerRadius = 30
-        //        tableView.layer.borderWidth = 2
-        tableView.layer.masksToBounds = true
         tableView.backgroundColor = .clear
         tableView.allowsSelection = false // отключение возможности выбора
-        tableView.register(DetailViewCell.self, forCellReuseIdentifier: DetailViewCell.identifier)
+        tableView.register(
+            DetailViewCell.self,
+            forCellReuseIdentifier: DetailViewCell.identifier
+        )
+        tableView.register(
+            InformationTableCell.self,
+            forHeaderFooterViewReuseIdentifier: InformationTableCell.identifier
+        )
         tableView.dataSource = self
         tableView.delegate = self
-        
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
@@ -78,9 +82,9 @@ final class DetailViewController: UIViewController {
         presenter?.configureCharacterDetail()
     }
     
-    private func saveUserSettings() {
+    @objc private func changePhotoTapped() {
         guard let presenter else { return }
-        //        presenter.saveSelectedCells(selectedCells: getReservedJobs())
+//        presenter.saveSelectedCells(selectedCells: getReservedJobs())
     }
 }
 
@@ -111,31 +115,39 @@ private extension DetailViewController {
         NSLayoutConstraint.activate([
             mainView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             mainView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            mainView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            mainView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            mainView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.3)
         ])
         
         NSLayoutConstraint.activate([
             characterImageView.centerXAnchor.constraint(equalTo: mainView.centerXAnchor),
             characterImageView.centerYAnchor.constraint(equalTo: mainView.centerYAnchor),
-//            characterImageView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-//            characterImageView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            characterImageView.heightAnchor.constraint(equalTo: mainView.heightAnchor, multiplier: 0.5),
+            characterImageView.heightAnchor.constraint(equalTo: mainView.heightAnchor, multiplier: 0.6),
             characterImageView.widthAnchor.constraint(equalTo: characterImageView.heightAnchor)
         ])
         
         NSLayoutConstraint.activate([
-//            changePhotoButton.centerXAnchor.constraint(equalTo: mainView.centerXAnchor),
             changePhotoButton.centerYAnchor.constraint(equalTo: mainView.centerYAnchor),
             changePhotoButton.leadingAnchor.constraint(equalTo: characterImageView.trailingAnchor, constant: 5),
-//            changePhotoButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-//            changePhotoButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+        
+        
+        NSLayoutConstraint.activate([
+            characterNameLabel.centerXAnchor.constraint(equalTo: mainView.centerXAnchor),
+            characterNameLabel.bottomAnchor.constraint(equalTo: mainView.bottomAnchor)
         ])
         
         NSLayoutConstraint.activate([
-            detailCharacterTableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            detailCharacterTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            detailCharacterTableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            detailCharacterTableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            detailCharacterTableView.topAnchor.constraint(equalTo: mainView.bottomAnchor),
+            detailCharacterTableView.leadingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+                constant: Constants.indentFromSuperView / 2
+            ),
+            view.safeAreaLayoutGuide.trailingAnchor.constraint(
+                equalTo: detailCharacterTableView.trailingAnchor,
+                constant: Constants.indentFromSuperView
+            ),
+            detailCharacterTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
 }
@@ -162,7 +174,7 @@ private extension DetailViewController {
             action: nil
         )
         
-        navigationItem.leftBarButtonItem = backButton
+        navigationItem.leftBarButtonItem?.image = UIImage(systemName: "BackButton")
         navigationItem.rightBarButtonItem = navBarImage
     }
     
@@ -182,11 +194,11 @@ extension DetailViewController: DetailViewProtocol {
         character = characterModel
         
         characterProperties = [
-            ["gender": characterModel.gender],
-            ["status": characterModel.status],
-            ["type": characterModel.type],
-            ["origin": characterModel.origin],
-            ["location": characterModel.location]]
+            ["Gender": characterModel.gender],
+            ["Status": characterModel.status],
+            ["Type": characterModel.type],
+            ["Origin": characterModel.origin],
+            ["Location": characterModel.location]]
         
     }
 }
@@ -211,17 +223,24 @@ extension DetailViewController: UITableViewDataSource {
 }
 
 extension DetailViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: InformationTableCell.identifier) as? InformationTableCell else { return InformationTableCell() }
+        return headerView
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        80
+        65
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        Constants.headerHeight
     }
 }
 
 // MARK: - Constants
 
 private enum Constants {
-    static var indentFromSuperView: CGFloat = 20
-    static var layoutSectionInset: CGFloat = 10
-    static let cellHeight: CGFloat = 105
+    static var indentFromSuperView: CGFloat = 30
+    static var headerLabelFrame: CGFloat = 5
+    static var headerHeight: CGFloat = 50
 }
-
-

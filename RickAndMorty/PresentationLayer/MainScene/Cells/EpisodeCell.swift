@@ -10,6 +10,7 @@ import UIKit
 protocol EpisodeCellDelegate: AnyObject {
     func selectFavoriteCell(at indexCell: Int)
     func characterImageTapped(at indexCell: Int)
+    func deleteCell(at indexCell: Int)
 }
 
 final class EpisodeCell: UICollectionViewCell {
@@ -95,6 +96,7 @@ final class EpisodeCell: UICollectionViewCell {
         setupLayout()
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -114,6 +116,23 @@ final class EpisodeCell: UICollectionViewCell {
     @objc private func characterImageTapped() {
         guard let indexCell else { return }
         delegate?.characterImageTapped(at: indexCell)
+        animateFavoriteButton()
+    }
+    
+    func returnStateOfImage() {
+        animateFavoriteButton()
+    }
+    
+    private func animateFavoriteButton() {
+        UIView.animate(
+            withDuration: 0.3,
+            animations: {
+                self.favoriteButton.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            },
+            completion: { _ in UIView.animate(withDuration: 0.3) {
+                self.favoriteButton.transform = CGAffineTransform.identity
+            }
+        })
     }
 }
 // MARK: - Configure view
@@ -121,6 +140,16 @@ final class EpisodeCell: UICollectionViewCell {
 private extension EpisodeCell {
     func configureView() {
         backgroundColor = .white
+        
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe))
+        swipeGesture.direction = .left
+        addGestureRecognizer(swipeGesture)
+       
+    }
+    
+    @objc private func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
+        guard let indexCell else { return }
+        delegate?.deleteCell(at: indexCell)
     }
     
     func setDefaultStateCell() {
@@ -290,10 +319,7 @@ private enum Constants {
         ofSize: 20,
         weight: .light
     )
-    static var mediumFont: UIFont = .systemFont(
-        ofSize: 20,
-        weight: .medium
-    )
+    static var mediumFont = UIFont(name: "Roboto-Medium", size: 20)
     
     static var characterLogoDefault = UIImage(named: "NameLogo")
     static var favoriteLogoDefault = UIImage(named: "Favorite")

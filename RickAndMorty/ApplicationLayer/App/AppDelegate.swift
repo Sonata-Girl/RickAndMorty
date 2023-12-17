@@ -26,40 +26,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 self.launchScreenPresenter = nil
             })
         }
-
+        
         window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = buildingAppScenes()
+        window?.rootViewController = AppBuilder.shared.setupTabBar()
         window?.makeKeyAndVisible()
          
         return true
-    }
-}
-
-// - MARK: Build scenes for app
-
-private extension AppDelegate {
-    func buildingAppScenes() -> UITabBarController {
-        let tabBarController = TabBarController()
-        
-        let mainVCBuilder = MainVCBuilder()
-        let favoritesVCBuilder = FavoritesVCBuilder()
-        let detailVCBuilder = DetailVCBuilder()
-        let navigationController = UINavigationController()
-        let routerMainVC = RouterMainVC(
-            mainVCBuilder: mainVCBuilder,
-            detailVCBuilder: detailVCBuilder,
-            rootController: navigationController
-        )
-        let routerFavoriteVC = RouterFavoritesVC(
-            favoritesVCBuilder: favoritesVCBuilder,
-            detailVCBuilder: detailVCBuilder,
-            rootController: navigationController
-        )
-        tabBarController.configureTabBar(
-            mainVC: mainVCBuilder.createMainViewModule(router: routerMainVC),
-            favoritesVC: favoritesVCBuilder.createFavoritesViewModule(router: routerFavoriteVC)
-        )
-        
-        return tabBarController
     }
 }

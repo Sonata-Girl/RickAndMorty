@@ -21,7 +21,16 @@ final class MainVCBuilder: MainVCBuilderProtocol {
             router: router
         )
         view.presenter = presenter
-
         return view
+    }
+    
+    func createRootController(view: MainViewController) -> UINavigationController {
+        let navigationController = UINavigationController(rootViewController: view)
+        navigationController.tabBarItem = UITabBarItem(
+            title: "",
+            image: UIImage(named: "Episodes"),
+            selectedImage: UIImage(named: "EpisodesSelect")
+        )
+        return navigationController
     }
 }

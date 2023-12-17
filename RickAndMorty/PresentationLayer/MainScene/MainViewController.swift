@@ -43,6 +43,7 @@ final class MainViewController: UIViewController {
         )
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
+        collectionView.allowsMultipleSelection = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
@@ -60,9 +61,13 @@ final class MainViewController: UIViewController {
         presenter?.getEpisodes(subload: false)
     }
 
-    private func saveUserSettings() {
-        guard let presenter else { return }
-//        presenter.saveSelectedCells(selectedCells: getReservedJobs())
+//    @objc private func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
+//        guard let indexPath = episodesCollectionView.indexPathForItem(at: gestureRecognizer.location(in: episodesCollectionView)) else { return }
+//        presenter?.deleteCell(at: indexPath.item)
+//    }
+    
+    func deleteCell(at indexCell: Int) {
+        presenter?.deleteCell(at:indexCell)
     }
 }
 
@@ -168,6 +173,7 @@ private extension MainViewController {
             cell.configureCell(episodeModel: item, indexPathCell: indexPath.item)
             return cell
         }
+        
     }
     
     func createDataSnapshot(items: EpisodeModels) {
@@ -219,6 +225,8 @@ extension MainViewController: UICollectionViewDelegate {
             presenter.startSubloadEpisodes()
         }
     }
+    
+    
 //    func getReservedJobs() -> EpisodeModels {
 //        guard let jobs = presenter?.jobs else { return JobsModel() }
 //        return jobs.filter { $0.isSelected }
@@ -236,7 +244,7 @@ extension MainViewController: MainViewProtocol {
         }
     }
     
-    func characterLoaded() {
+    func updateCollection() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.updateDataSnapshot()
@@ -254,6 +262,10 @@ extension MainViewController: EpisodeCellDelegate {
     
     func selectFavoriteCell(at indexCell: Int) {
         presenter?.didSelectFavoriteCell(at: indexCell)
+        let indexPath = IndexPath(row: indexCell, section: 0)
+            
+        guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
+        cell.returnStateOfImage()
     }
     
     func characterImageTapped(at indexCell: Int) {

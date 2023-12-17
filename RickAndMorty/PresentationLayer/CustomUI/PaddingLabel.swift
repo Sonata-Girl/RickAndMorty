@@ -4,7 +4,7 @@
 //
 //  Created by Sonata Girl on 12.12.2023.
 //
-
+#warning("Clear")
 import UIKit
 
 // MARK: - Custom label with insets
@@ -22,6 +22,7 @@ import UIKit
         super.drawText(in: rect.inset(by: insets))
     }
     
+    @available(*, unavailable)
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

@@ -13,18 +13,15 @@ final class RouterMainVC: RouterMainVCProtocol {
     var rootController: UINavigationController?
 
     init(mainVCBuilder: MainVCBuilder,
-         detailVCBuilder: DetailVCBuilder,
-         rootController: UINavigationController) {
+         detailVCBuilder: DetailVCBuilder) {
         self.mainVCBuilder = mainVCBuilder
         self.detailVCBuilder = detailVCBuilder
-        self.rootController = rootController
     }
     
     func initialMainViewController() {
-        if let rootController = rootController {
-            guard let mainVC = mainVCBuilder?.createMainViewModule(router: self) else { return }
-            rootController.pushViewController(mainVC, animated: true)
-        }
+        guard let builder = mainVCBuilder else { return }
+        let mainVC = builder.createMainViewModule(router: self)
+        rootController = builder.createRootController(view: mainVC)
     }
 
     func showDetailViewController(characterModel: CharacterModel) {

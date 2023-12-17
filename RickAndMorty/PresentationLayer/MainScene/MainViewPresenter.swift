@@ -12,8 +12,8 @@ import CoreData
 // MARK: - View protocol
 
 protocol MainViewProtocol: AnyObject {
-    func episodesLoaded()
-    func characterLoaded()
+    func createCollection()
+    func updateCollection()
     func failure(error: Error)
 }
 
@@ -33,7 +33,8 @@ protocol MainPresenterProtocol: AnyObject {
     func getCharacter(characterUrl: URL, episodeIndex: Int)
     func didSelectFavoriteCell(at indexCell: Int)
     func characterImageTapped(at indexCell: Int)
-    //    func saveSelectedCells(selectedCells: EpisodeModels)
+    func deleteCell(at index: Int)
+    func saveSelectedCells(selectedCells: EpisodeModels)
 }
 
 // MARK: - Presenter
@@ -71,7 +72,7 @@ final class MainViewPresenter: MainPresenterProtocol {
                     self.pageInfo = PageInfo(from: episodesDto.info)
                     self.episodes += episodesDto.results.models
                     //                        self.loadSelectedCellsSettings()
-                    self.view?.episodesLoaded()
+                    self.view?.createCollection()
                 case .failure(let error):
                     self.view?.failure(error: error)
             }
@@ -88,7 +89,7 @@ final class MainViewPresenter: MainPresenterProtocol {
     func getCharacter(characterUrl: URL, episodeIndex: Int) {
         if let cachedCharacter = cacheCharacter.object(forKey: characterUrl.absoluteString as NSString) {
             self.episodes[episodeIndex].character = CharacterModel(from: cachedCharacter)
-            self.view?.characterLoaded()
+            self.view?.updateCollection()
             return
         }
         networkManager?.getCharacter(characterUrl: characterUrl) { [weak self] result in
@@ -113,7 +114,7 @@ final class MainViewPresenter: MainPresenterProtocol {
                 let characterModelWrapped = CacheCharacterWrapper(from: character)
                 self.cacheCharacter.setObject(characterModelWrapped, forKey: character.url.absoluteString as NSString)
             }
-            self.view?.characterLoaded()
+            self.view?.updateCollection()
         }
     }
     
@@ -123,7 +124,7 @@ final class MainViewPresenter: MainPresenterProtocol {
         self.episodes[indexCell].isFavorite.toggle()
         #warning("todo saving in coredara?")
         
-        self.view?.characterLoaded()
+        self.view?.updateCollection()
     }
     
     func characterImageTapped(at indexCell: Int) {
@@ -131,41 +132,23 @@ final class MainViewPresenter: MainPresenterProtocol {
         router?.showDetailViewController(characterModel: character)
     }
     
+    func deleteCell(at index: Int) {
+        episodes.remove(at: index)
+        view?.createCollection()
+    }
+
     // MARK: UserDefaults methods
     
-    private func loadUserSaves() {
-        //        guard let userSelectedCells = UserDefaults.standard.value(
-        //            SelectedCellsSavingModel.self,
-        //            forKey: Constants.userSavesSelectedCellsName
-        //        ) else { return }
-        //
-        //        savedSelectedCells = userSelectedCells
-    }
+//    private func loadUserSaves() {
+
+//    }
     
-    private func loadSelectedCellsSettings() {
-        //        guard savedSelectedCells.isEmpty == false else { return }
-        //
-        //        savedSelectedCells.forEach { savedCell in
-        //            if let indexJob = jobs.firstIndex(where: {
-        //                $0.profession == savedCell.profession &&
-        //                $0.employer == savedCell.employer &&
-        //                $0.salary == savedCell.salary &&
-        //                $0.id == savedCell.id
-        //            }) {
-        //                jobs[indexJob].isSelected = true
-        //            }
-        //        }
-    }
+//    private func loadSelectedCellsSettings() {
+//
+//    }
     
     //    func saveSelectedCells(selectedCells: JobsModel) {
-    //        savedSelectedCells = SelectedCellsSavingModel()
-    //        selectedCells.forEach {
-    //            self.savedSelectedCells.append(SelectedCellSavingModel(jobModel: $0))
-    //        }
-    //        UserDefaults.standard.set(
-    //            encodable: self.savedSelectedCells,
-    //            forKey: Constants.userSavesSelectedCellsName
-    //        )
+
     //    }
 }
 

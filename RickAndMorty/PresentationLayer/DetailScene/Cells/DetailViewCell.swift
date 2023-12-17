@@ -14,21 +14,15 @@ final class DetailViewCell: UITableViewCell {
     private let propertyLabel: UILabel = {
         let label = UILabel()
         label.textColor = .label
-        label.font = .systemFont(
-            ofSize: 15,
-            weight: .light
-        )
+        label.font = UIFont(name: "Roboto-Medium", size: 17)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let valueLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .label
-        label.font = .systemFont(
-            ofSize: 15,
-            weight: .regular
-        )
+        label.textColor = .systemGray
+        label.font = UIFont(name: "Roboto-Light", size: 16)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -45,7 +39,8 @@ final class DetailViewCell: UITableViewCell {
         setupLayout()
     }
     
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }
@@ -72,17 +67,34 @@ private extension DetailViewCell {
 private extension DetailViewCell {
     func setupLayout() {
         NSLayoutConstraint.activate([
-            propertyLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
-            propertyLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            propertyLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            propertyLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            propertyLabel.topAnchor.constraint(
+                equalTo: contentView.topAnchor,
+                constant: 5
+            ),
+            propertyLabel.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor,
+                constant: Constants.indentFromSuperView
+            ),
+            contentView.trailingAnchor.constraint(
+                equalTo: propertyLabel.trailingAnchor,
+                constant: Constants.indentFromSuperView
+            ),
         ])
         
         NSLayoutConstraint.activate([
             valueLabel.topAnchor.constraint(equalTo: propertyLabel.bottomAnchor),
-            valueLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            valueLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            valueLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            valueLabel.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor,
+                constant: Constants.indentFromSuperView
+            ),
+            contentView.trailingAnchor.constraint(
+                equalTo: valueLabel.trailingAnchor,
+                constant: Constants.indentFromSuperView
+            ),
+            contentView.bottomAnchor.constraint(
+                equalTo: valueLabel.bottomAnchor,
+                constant: 10
+            )
         ])
     }
 }
@@ -92,13 +104,19 @@ private extension DetailViewCell {
 extension DetailViewCell {
     func configureCell(key: String, value: String) {
         propertyLabel.text = key
-        valueLabel.text = value
+        valueLabel.text = value == "" ? "Unknown" : value.localizedCapitalized
     }
     
     override func prepareForReuse() {
         propertyLabel.text = nil
         valueLabel.text = nil
     }
+}
+
+// MARK: - Constants
+
+private enum Constants {
+    static var indentFromSuperView: CGFloat = 20
 }
 
 // MARK: - Identifier cell

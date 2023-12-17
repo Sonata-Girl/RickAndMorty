@@ -13,18 +13,16 @@ final class RouterFavoritesVC: RouterFavoriteVCProtocol {
     var rootController: UINavigationController?
 
     init(favoritesVCBuilder: FavoritesVCBuilder,
-         detailVCBuilder: DetailVCBuilder,
-         rootController: UINavigationController) {
+         detailVCBuilder: DetailVCBuilder) {
         self.favoritesVCBuilder = favoritesVCBuilder
         self.detailVCBuilder = detailVCBuilder
-        self.rootController = rootController
+        self.rootController = UINavigationController()
     }
     
     func initialFavoritesViewController() {
-        if let rootController = rootController {
-            guard let mainVC = favoritesVCBuilder?.createFavoritesViewModule(router: self) else { return }
-            rootController.pushViewController(mainVC, animated: true)
-        }
+        guard let builder = favoritesVCBuilder else { return }
+        let favoriteVC = builder.createFavoritesViewModule(router: self)
+        rootController = builder.createRootController(view: favoriteVC)
     }
 
     func showDetailViewController(characterModel: CharacterModel) {

@@ -15,9 +15,22 @@ final class FavoritesVCBuilder: FavoritesVCBuilderProtocol {
     func createFavoritesViewModule(router: RouterProtocol) -> FavoritesViewController {
         let view = FavoritesViewController()
         let networkService = NetworkService.shared
-        let presenter = FavoritesViewPresenter(view: view, networkManager: networkService, router: router)
+        let presenter = FavoritesViewPresenter(
+            view: view,
+            networkManager: networkService, 
+            router: router
+        )
         view.presenter = presenter
-
         return view
+    }
+    
+    func createRootController(view: FavoritesViewController) -> UINavigationController {
+        let navigationController = UINavigationController(rootViewController: view)
+        navigationController.tabBarItem = UITabBarItem(
+            title: "",
+            image: UIImage(named: "Favorites"),
+            selectedImage: UIImage(named: "FavoritesSelect")
+        )
+        return navigationController
     }
 }
