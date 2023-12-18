@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import CoreData
 
 // MARK: - View protocol
 
@@ -42,13 +41,15 @@ final class MainViewPresenter: MainPresenterProtocol {
     weak var view: MainViewProtocol?
     let networkManager: NetworkServiceProtocol?
     let router: RouterProtocol?
+    private let cacheCharacter = NSCache<NSString, CacheCharacterWrapper>()
+   
     var episodes: EpisodeModels = []
     var filteredEpisodes: EpisodeModels = []
+    var favoriteEpisodes = Set<Int>()
+    
     var pageNumber = 1
     var isSubloading = false
     var pageInfo: PageInfo?
-    private let cacheCharacter = NSCache<NSString, CacheCharacterWrapper>()
-    var favoriteCells = Set<Int>()
     
     required init(
         view: MainViewProtocol,
@@ -71,7 +72,7 @@ final class MainViewPresenter: MainPresenterProtocol {
                     self.pageInfo = PageInfo(from: episodesDto.info)
                     self.episodes += episodesDto.results.models.map {
                         var episodeModel = $0
-                        if self.favoriteCells.contains($0.id) {
+                        if self.favoriteEpisodes.contains($0.id) {
                             episodeModel.isFavorite.toggle()
                         }
                         return episodeModel
@@ -134,9 +135,9 @@ final class MainViewPresenter: MainPresenterProtocol {
         episodes[indexCell].isFavorite.toggle()
         let episode = episodes[indexCell]
         if episode.isFavorite {
-            favoriteCells.insert(episode.id)
+            favoriteEpisodes.insert(episode.id)
         } else {
-            favoriteCells.remove(episode.id)
+            favoriteEpisodes.remove(episode.id)
         }
         
         saveSelectedCells()
@@ -160,12 +161,12 @@ final class MainViewPresenter: MainPresenterProtocol {
             forKey: Constants.userFavoritesSavesName
         ) as? [Int] else { return }
         
-        favoriteCells = Set(userFavoriteCells)
+        favoriteEpisodes = Set(userFavoriteCells)
     }
     
     func saveSelectedCells() {
         UserDefaults.standard.set(
-            Array(favoriteCells),
+            Array(favoriteEpisodes),
             forKey: Constants.userFavoritesSavesName
         )
     }

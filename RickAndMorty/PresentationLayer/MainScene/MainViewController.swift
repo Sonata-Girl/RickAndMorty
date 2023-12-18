@@ -65,10 +65,7 @@ final class MainViewController: UIViewController {
 //        guard let indexPath = episodesCollectionView.indexPathForItem(at: gestureRecognizer.location(in: episodesCollectionView)) else { return }
 //        presenter?.deleteCell(at: indexPath.item)
 //    }
-    
-    func deleteCell(at indexCell: Int) {
-        presenter?.deleteCell(at:indexCell)
-    }
+
 }
 
 // MARK: - Configure view properties
@@ -265,11 +262,16 @@ extension MainViewController: EpisodeCellDelegate {
         let indexPath = IndexPath(row: indexCell, section: 0)
             
         guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
-        cell.returnStateOfImage()
+        cell.returnStateOfFavoriteImage()
     }
     
     func characterImageTapped(at indexCell: Int) {
         presenter?.characterImageTapped(at: indexCell)
+    }
+    
+    
+    func deleteCell(at indexCell: Int) {
+        presenter?.deleteCell(at:indexCell)
     }
 //    @objc func reserveButtonPressed() {
 //        showSumSalaryAlert()
@@ -285,12 +287,3 @@ extension MainViewController: EpisodeCellDelegate {
 //        present(alert, animated: true)
 //    }
 }
-
-// MARK: - Constants
-
-private enum Constants {
-    static var indentFromSuperView: CGFloat = 20
-    static var layoutSectionInset: CGFloat = 10
-}
-
-

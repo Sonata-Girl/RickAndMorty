@@ -11,7 +11,7 @@ import Foundation
 
 protocol NetworkServiceProtocol {
     func getEpisodes(page: Int, completion: @escaping (Result<EpisodesDto, ErrorTypes>) -> Void)
-    func getEpisode(episodeNumber: Int, completion: @escaping (Result<EpisodeDto, ErrorTypes>) -> Void)
+    func getMultipleEpisodes(episodesStrings: [String], completion: @escaping (Result<EpisodeDtoModels, ErrorTypes>) -> Void)
     func getCharacter(characterUrl: URL, completion: @escaping (Result<CharacterDto, ErrorTypes>) -> Void)
     func loadImageData(from url: URL, completion: @escaping (Data?) -> Void)
 }
@@ -20,7 +20,7 @@ protocol NetworkServiceProtocol {
 
 private enum ApiType {
     case getEpisodes
-    case getEpisode
+    case getMultipleEpisodes
     case getCharacter
  
     static var baseURL: String {
@@ -30,7 +30,7 @@ private enum ApiType {
     var path: String {
         switch self{
         case .getEpisodes: return "/episode?page="
-        case .getEpisode: return "/episode/"
+        case .getMultipleEpisodes: return "/episode/"
         case .getCharacter: return "/character/"
         }
     }
@@ -86,12 +86,12 @@ final class NetworkService: NetworkServiceProtocol {
         }
     }
     
-    func getEpisode(episodeNumber: Int, completion: @escaping (Result<EpisodeDto, ErrorTypes>) -> Void) {
-        guard let url = URL(string: api.getEpisode.urlString + "\(episodeNumber)") else { return }
-        fetchJsonData(from: url) { (result: Result<EpisodeDto, ErrorTypes>) in
+    func getMultipleEpisodes(episodesStrings: [String], completion: @escaping (Result<EpisodeDtoModels, ErrorTypes>) -> Void) {
+        guard let url = URL(string: api.getMultipleEpisodes.urlString + episodesStrings.joined(separator: ",")) else { return }
+        fetchJsonData(from: url) { (result: Result<EpisodeDtoModels, ErrorTypes>) in
             switch result {
-                case .success(let episode):
-                    completion(.success(episode))
+                case .success(let episodes):
+                    completion(.success(episodes))
                 case .failure(let error):
                     completion(.failure(error))
             }
@@ -119,51 +119,4 @@ final class NetworkService: NetworkServiceProtocol {
             completion(data)
         }.resume()
     }
-    
-//    func getEpisodes(completion: @escaping (Result<EpisodesDto, Error>) -> Void) {
-//        guard let url = URL(string: api.getEpisodes.urlString) else { return }
-//         
-//        guard let path = Bundle.main.path(forResource: "JSON", ofType: "json") else { return }
-//        let jsonDecoder = JSONDecoder()
-//        
-////        DispatchQueue.global().async {
-////            if let data = try? Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe) {
-////                let episodesDto = try! jsonDecoder.decode(EpisodesDto.self, from: data)
-////                completion(.success(episodesDto))
-////            }
-////        }
-//        URLSession.shared.dataTask(with: url) { data, response, error in
-//            if let error = error {
-//                completion(.failure(error))
-//                print("Error: \(error.localizedDescription)")
-//                return
-//            }
-//
-//            guard let response = response as? HTTPURLResponse,
-//                  response.statusCode == 200 else { return }
-//
-//            guard let data = data else { return }
-//            do {
-//                let episodesDto = try self.decoder.decode(EpisodesDto.self, from: data)
-//                completion(.success(episodesDto))
-//            } catch let error {
-//                completion(.failure(error))
-//            }
-//        }.resume()
-//    }
-
-//    func loadImageData(from url: URL, completion: @escaping (Data?) -> Void) {
-//           if let cachedImage = imageCache.object(forKey: url.absoluteString as NSString) {
-//               completion(cachedImage.imageData)
-//           }
-//           fetchData(from: url) { (result: Result<Data, ErrorTypes>) in
-//               switch result {
-//               case .success(let data):
-//                   self.imageCache.setObject(ImageDataWrapper(imageData: data), forKey: url.absoluteString as NSString)
-//                   completion(data)
-//               case .failure:
-//                   completion(nil)
-//               }
-//           }
-//       }
 }

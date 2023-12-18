@@ -13,6 +13,12 @@ protocol EpisodeCellDelegate: AnyObject {
     func deleteCell(at indexCell: Int)
 }
 
+//protocol MainViewEpisodeCellDelegate: FavoritesViewCellDelegate {
+//    func deleteCell(at indexCell: Int)
+//}
+//
+//protocol EpisodeCellDelegate: MainViewEpisodeCellDelegate {}
+
 final class EpisodeCell: UICollectionViewCell {
     
     weak var delegate: EpisodeCellDelegate?
@@ -119,7 +125,7 @@ final class EpisodeCell: UICollectionViewCell {
         animateFavoriteButton()
     }
     
-    func returnStateOfImage() {
+    func returnStateOfFavoriteImage() {
         animateFavoriteButton()
     }
     
@@ -269,11 +275,6 @@ extension EpisodeCell {
             characterImage.image = UIImage(data: imageData)
             characterImage.contentMode = .scaleAspectFill
         }
-        #warning("Clean")
-//        if let data = try? Data(contentsOf: episodeModel.character?.imageUrl ?? URL(fileURLWithPath: "")) {
-//            characterImage.image = UIImage(data: data)
-//        }
-        
         changeSelectedCellState(selected: episodeModel.isFavorite)
     }
     
@@ -291,6 +292,7 @@ extension EpisodeCell {
             for: .normal
         )
         characterImage.contentMode = .scaleAspectFit
+        indexCell = nil
     }
     
 }
