@@ -8,15 +8,20 @@
 import UIKit
 
 protocol DetailVCBulderProtocol {
-    func createDetailViewModule(router: RouterProtocol) -> UIViewController
+    func createDetailViewModule(router: RouterProtocol, characterModel: CharacterModel) -> UIViewController
 }
 
 final class DetailVCBuilder: DetailVCBulderProtocol {
-    func createDetailViewModule(router: RouterProtocol) -> UIViewController {
+    func createDetailViewModule(router: RouterProtocol, characterModel: CharacterModel) -> UIViewController {
         let view = DetailViewController()
-//        let networkService = NetworkService()
-//        let presenter = DetailVCPresenter(view: view, networkService: networkService, router: router)
-//        view.presenter = presenter
+        let networkService = NetworkService.shared
+        let presenter = DetailViewPresenter(
+            view: view,
+            networkService: networkService,
+            router: router, 
+            characterModel: characterModel
+        )
+        view.presenter = presenter
 
         return view
     }

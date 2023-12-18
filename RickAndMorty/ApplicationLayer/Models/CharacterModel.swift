@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Character model
 
-struct CharacterModel: Hashable, Identifiable {
+struct CharacterModel/*: Hashable, Identifiable */{
     let id: Int
     let name: String
     let gender: String
@@ -18,6 +18,7 @@ struct CharacterModel: Hashable, Identifiable {
     let origin: String
     let location: String
     let imageUrl: URL
+    let url: URL
     var imageData: Data?
     
     func hash(into hasher: inout Hasher) {
@@ -41,7 +42,23 @@ extension CharacterModel {
         self.origin = dto.origin.name
         self.location = dto.location.name
         self.imageUrl = dto.image
+        self.url = dto.url
         self.imageData = nil
+    }
+}
+
+extension CharacterModel {
+    init(from cache: CacheCharacterWrapper) {
+        self.id = cache.id
+        self.name = cache.name
+        self.gender = cache.gender
+        self.status = cache.status
+        self.type = cache.type
+        self.origin = cache.origin
+        self.location = cache.location
+        self.imageUrl = cache.imageUrl
+        self.imageData = cache.imageData
+        self.url = cache.url
     }
 }
 

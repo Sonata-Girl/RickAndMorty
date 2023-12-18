@@ -6,7 +6,7 @@
 //
 import UIKit
 
-final class TabBarController: UITabBarController {
+final class CustomTabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -14,15 +14,7 @@ final class TabBarController: UITabBarController {
         setTabBarAppearance()
     }
     
-    private func generateVC(viewController: UIViewController, title: String, image: UIImage?, selectedImage: UIImage? ) -> UINavigationController {
-        let navigationController = UINavigationController(rootViewController: viewController)
-        navigationController.tabBarItem = UITabBarItem(
-            title: title,
-            image: image,
-            selectedImage: selectedImage
-        )
-        return navigationController
-    }
+    // MARK: Setup tabBar design
     
     private func setTabBarAppearance() {
         view.backgroundColor = .white
@@ -37,23 +29,12 @@ final class TabBarController: UITabBarController {
         tabBar.layer.addSublayer(shadowLayer)
     }
     
+    // MARK: Setup tabBar viewControllers
+    
     func configureTabBar(
-        mainVC: MainViewController,
-        favoritesVC: FavoritesViewController
+        mainVC: UINavigationController,
+        favoritesVC: UINavigationController
     ) {
-        viewControllers = [
-            generateVC(
-                viewController: mainVC,
-                title: "",
-                image: UIImage(named: "episodes"),
-                selectedImage: UIImage(named: "episodesSelect")
-            ),
-            generateVC(
-                viewController: favoritesVC,
-                title: "",
-                image: UIImage(named: "favorites"),
-                selectedImage: UIImage(named: "favoritesSelect")
-            ),
-       ]
+        viewControllers = [mainVC, favoritesVC]
     }
 }

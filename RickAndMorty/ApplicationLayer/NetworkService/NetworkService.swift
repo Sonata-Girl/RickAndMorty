@@ -46,7 +46,6 @@ final class NetworkService: NetworkServiceProtocol {
     static let shared = NetworkService()
     private let api = ApiType.self
     private let jsonDecoder = JSONDecoder()
-    private let imageCache = NSCache<NSString, ImageDataWrapper>()
     
     private init() {}
     
@@ -112,15 +111,11 @@ final class NetworkService: NetworkServiceProtocol {
     }
     
     func loadImageData(from url: URL, completion: @escaping (Data?) -> Void) {
-        if let cachedImage = imageCache.object(forKey: url.absoluteString as NSString) {
-            completion(cachedImage.imageData)
-        }
-        URLSession.shared.dataTask(with: url) { data, _, error in
+          URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else {
                 completion(nil)
                 return
             }
-            self.imageCache.setObject(ImageDataWrapper(imageData: data), forKey: url.absoluteString as NSString)
             completion(data)
         }.resume()
     }

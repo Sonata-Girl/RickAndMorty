@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MainViewController.swift
 //  RickAndMorty
 //
 //  Created by Sonata Girl on 12.12.2023.
@@ -42,8 +42,8 @@ final class MainViewController: UIViewController {
             forCellWithReuseIdentifier: EpisodeCell.identifier
         )
         collectionView.showsVerticalScrollIndicator = false
-//        collectionView.backgroundColor = .appLightGrayColor()
         collectionView.delegate = self
+        collectionView.allowsMultipleSelection = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
@@ -58,12 +58,16 @@ final class MainViewController: UIViewController {
         configureNavigationController()
         setupDataSource()
         
-        presenter?.getEpisodes()
+        presenter?.getEpisodes(subload: false)
     }
 
-    private func saveUserSettings() {
-        guard let presenter else { return }
-//        presenter.saveSelectedCells(selectedCells: getReservedJobs())
+//    @objc private func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
+//        guard let indexPath = episodesCollectionView.indexPathForItem(at: gestureRecognizer.location(in: episodesCollectionView)) else { return }
+//        presenter?.deleteCell(at: indexPath.item)
+//    }
+    
+    func deleteCell(at indexCell: Int) {
+        presenter?.deleteCell(at:indexCell)
     }
 }
 
@@ -80,8 +84,6 @@ private extension MainViewController {
 private extension MainViewController {
     func additionSubviews() {
         view.addSubview(episodesCollectionView)
-//        view.addSubview(reserveView)
-//        reserveView.addSubview(reserveButton)
     }
 }
 
@@ -167,9 +169,11 @@ private extension MainViewController {
                 )
             }
             
-            cell.configureCell(episodeModel: item)
+            cell.delegate = self
+            cell.configureCell(episodeModel: item, indexPathCell: indexPath.item)
             return cell
         }
+        
     }
     
     func createDataSnapshot(items: EpisodeModels) {
@@ -187,6 +191,7 @@ private extension MainViewController {
             var updatedSnapshot = dataSource?.snapshot() else { return }
         if isSearchBarEmpty {
             updatedSnapshot.reloadItems(presenter.episodes)
+//            updatedSnapshot.appendItems(presenter.episodes, toSection: 0)
         } else {
             updatedSnapshot.reloadItems(presenter.filteredEpisodes)
         }
@@ -216,8 +221,12 @@ extension MainViewController: UICollectionViewDelegate {
             let _ = presenter.pageInfo?.next
         else { return }
         
-        presenter.subloadEpisodes()
+        if !presenter.isSubloading {
+            presenter.startSubloadEpisodes()
+        }
     }
+    
+    
 //    func getReservedJobs() -> EpisodeModels {
 //        guard let jobs = presenter?.jobs else { return JobsModel() }
 //        return jobs.filter { $0.isSelected }
@@ -227,16 +236,18 @@ extension MainViewController: UICollectionViewDelegate {
 // MARK: - Loading data with network service
 
 extension MainViewController: MainViewProtocol {
-    func episodesLoaded() {
+    func createCollection() {
         guard let presenter else { return }
         DispatchQueue.main.async { [weak self] in
-            self?.createDataSnapshot(items: presenter.episodes)
+            guard let self else { return }
+            self.createDataSnapshot(items: presenter.episodes)
         }
     }
     
-    func characterLoaded() {
+    func updateCollection() {
         DispatchQueue.main.async { [weak self] in
-            self?.updateDataSnapshot()
+            guard let self else { return }
+            self.updateDataSnapshot()
         }
     }
     
@@ -247,8 +258,19 @@ extension MainViewController: MainViewProtocol {
 
 // MARK: - Handle actions methods
 
-private extension MainViewController {
+extension MainViewController: EpisodeCellDelegate {
     
+    func selectFavoriteCell(at indexCell: Int) {
+        presenter?.didSelectFavoriteCell(at: indexCell)
+        let indexPath = IndexPath(row: indexCell, section: 0)
+            
+        guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
+        cell.returnStateOfImage()
+    }
+    
+    func characterImageTapped(at indexCell: Int) {
+        presenter?.characterImageTapped(at: indexCell)
+    }
 //    @objc func reserveButtonPressed() {
 //        showSumSalaryAlert()
 //    }

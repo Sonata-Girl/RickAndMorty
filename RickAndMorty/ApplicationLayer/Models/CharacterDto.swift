@@ -18,6 +18,7 @@ struct CharacterDto: Decodable {
     let origin: Name
     let location: Name
     let image: URL
+    let url: URL
 }
 
 
@@ -37,5 +38,3 @@ extension Array where Element == CharacterDto {
         self.map { $0.model }
     }
 }
-
-typealias CharacterDtoModels = [CharacterDto]

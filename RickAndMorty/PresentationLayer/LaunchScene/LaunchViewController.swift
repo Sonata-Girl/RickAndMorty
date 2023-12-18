@@ -26,7 +26,7 @@ final class LaunchViewController: UIViewController {
     
      let launchLogo: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleToFill
         imageView.image = UIImage(named: "LoadingLogo")
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -86,8 +86,8 @@ private extension LaunchViewController {
         NSLayoutConstraint.activate([
             launchLogo.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             launchLogo.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            launchLogo.widthAnchor.constraint(equalToConstant: Constants.loadLogoSize),
-            launchLogo.heightAnchor.constraint(equalToConstant: Constants.loadLogoSize),
+            launchLogo.widthAnchor.constraint(equalToConstant: 300),
+            launchLogo.heightAnchor.constraint(equalToConstant: 270),
         ])
     }
 }
@@ -105,5 +105,4 @@ extension LaunchViewController: LaunchViewProtocol {
 
 private enum Constants {
     static var indentXFromSuperView: CGFloat = 34
-    static let loadLogoSize: CGFloat = 300
 }

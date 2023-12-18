@@ -7,12 +7,13 @@
 //
 
 import Foundation
+import CoreData
 
 // MARK: - View protocol
 
 protocol MainViewProtocol: AnyObject {
-    func episodesLoaded()
-    func characterLoaded()
+    func createCollection()
+    func updateCollection()
     func failure(error: Error)
 }
 
@@ -23,14 +24,16 @@ protocol MainPresenterProtocol: AnyObject {
          networkManager: NetworkServiceProtocol,
          router: RouterProtocol
     )
-    var pageInfo: PageInfo? { get set }
-    var episodes: EpisodeModels { get set }
-    var filteredEpisodes: EpisodeModels  { get set }
-    func getEpisodes()
-    func subloadEpisodes()
+    var pageInfo: PageInfo? { get }
+    var episodes: EpisodeModels { get }
+    var filteredEpisodes: EpisodeModels  { get }
+    var isSubloading: Bool { get }
+    func getEpisodes(subload: Bool)
+    func startSubloadEpisodes()
     func getCharacter(characterUrl: URL, episodeIndex: Int)
-    func loadCharacterImage(characterImageUrl: URL, indexItem: Int)
-    //    func saveSelectedCells(selectedCells: EpisodeModels)
+    func didSelectFavoriteCell(at indexCell: Int)
+    func characterImageTapped(at indexCell: Int)
+    func deleteCell(at index: Int)
 }
 
 // MARK: - Presenter
@@ -38,12 +41,15 @@ protocol MainPresenterProtocol: AnyObject {
 final class MainViewPresenter: MainPresenterProtocol {
     weak var view: MainViewProtocol?
     let networkManager: NetworkServiceProtocol?
-    var router: RouterProtocol?
+    let router: RouterProtocol?
     var episodes: EpisodeModels = []
     var filteredEpisodes: EpisodeModels = []
     var pageNumber = 1
+    var isSubloading = false
     var pageInfo: PageInfo?
- 
+    private let cacheCharacter = NSCache<NSString, CacheCharacterWrapper>()
+    var favoriteCells = Set<Int>()
+    
     required init(
         view: MainViewProtocol,
         networkManager: NetworkServiceProtocol,
@@ -52,47 +58,57 @@ final class MainViewPresenter: MainPresenterProtocol {
         self.view = view
         self.networkManager = networkManager
         self.router = router
-        //            loadUserSaves()
+        loadUserSaves()
     }
+
+    // MARK: Loading data method
     
-    // MARK: Loading data methods
-    
-    func getEpisodes() {
+    func getEpisodes(subload: Bool = false) {
         networkManager?.getEpisodes(page: pageNumber) { [weak self] result in
             guard let self else { return }
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                switch result {
-                    case .success(let episodesDto):
-                        pageInfo = PageInfo(from: episodesDto.info)
-                        self.episodes += episodesDto.results.models
-                        //                        self.loadSelectedCellsSettings()
-                        self.view?.episodesLoaded()
-                    case .failure(let error):
-                        self.view?.failure(error: error)
-                }
+            switch result {
+                case .success(let episodesDto):
+                    self.pageInfo = PageInfo(from: episodesDto.info)
+                    self.episodes += episodesDto.results.models.map {
+                        var episodeModel = $0
+                        if self.favoriteCells.contains($0.id) {
+                            episodeModel.isFavorite.toggle()
+                        }
+                        return episodeModel
+                    }
+                    self.view?.createCollection()
+                case .failure(let error):
+                    self.view?.failure(error: error)
             }
         }
+        isSubloading = subload
     }
     
-    func subloadEpisodes() {
+    func startSubloadEpisodes() {
+        isSubloading = true
         pageNumber += 1
-        getEpisodes()
+        getEpisodes(subload: isSubloading)
     }
     
     func getCharacter(characterUrl: URL, episodeIndex: Int) {
+        if let cachedCharacter = cacheCharacter.object(forKey: characterUrl.absoluteString as NSString) {
+            self.episodes[episodeIndex].character = CharacterModel(from: cachedCharacter)
+            self.view?.updateCollection()
+            return
+        }
         networkManager?.getCharacter(characterUrl: characterUrl) { [weak self] result in
             guard let self else { return }
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                switch result {
-                    case .success(let characterDto):
-                        self.episodes[episodeIndex].character = characterDto.model
-                        loadCharacterImage(characterImageUrl: characterDto.model.imageUrl, indexItem: episodeIndex)
-                    case .failure(let error):
-                        self.view?.failure(error: error)
-                }
+            switch result {
+                case .success(let characterDto):
+                    self.episodes[episodeIndex].character = characterDto.model
+                    loadCharacterImage(
+                        characterImageUrl: characterDto.model.imageUrl,
+                        indexItem: episodeIndex
+                    )
+                case .failure(let error):
+                    self.view?.failure(error: error)
             }
+            
         }
     }
     
@@ -101,49 +117,62 @@ final class MainViewPresenter: MainPresenterProtocol {
             guard let self,
                   let imageData = result else { return }
             self.episodes[indexItem].character?.imageData = imageData
-            self.view?.characterLoaded()
+            if let character = self.episodes[indexItem].character {
+                let characterModelWrapped = CacheCharacterWrapper(from: character)
+                self.cacheCharacter.setObject(
+                    characterModelWrapped,
+                    forKey: character.url.absoluteString as NSString
+                )
+            }
+            self.view?.updateCollection()
         }
     }
+    
+    // MARK: Change data methods
+    
+    func didSelectFavoriteCell(at indexCell: Int) {
+        episodes[indexCell].isFavorite.toggle()
+        let episode = episodes[indexCell]
+        if episode.isFavorite {
+            favoriteCells.insert(episode.id)
+        } else {
+            favoriteCells.remove(episode.id)
+        }
+        
+        saveSelectedCells()
+        view?.updateCollection()
+    }
+    
+    func characterImageTapped(at indexCell: Int) {
+        guard let character = self.episodes[indexCell].character else { return }
+        router?.showDetailViewController(characterModel: character)
+    }
+    
+    func deleteCell(at index: Int) {
+        episodes.remove(at: index)
+        view?.createCollection()
+    }
+
     // MARK: UserDefaults methods
     
     private func loadUserSaves() {
-        //        guard let userSelectedCells = UserDefaults.standard.value(
-        //            SelectedCellsSavingModel.self,
-        //            forKey: Constants.userSavesSelectedCellsName
-        //        ) else { return }
-        //
-        //        savedSelectedCells = userSelectedCells
+        guard let userFavoriteCells = UserDefaults.standard.value(
+            forKey: Constants.userFavoritesSavesName
+        ) as? [Int] else { return }
+        
+        favoriteCells = Set(userFavoriteCells)
     }
     
-    private func loadSelectedCellsSettings() {
-        //        guard savedSelectedCells.isEmpty == false else { return }
-        //
-        //        savedSelectedCells.forEach { savedCell in
-        //            if let indexJob = jobs.firstIndex(where: {
-        //                $0.profession == savedCell.profession &&
-        //                $0.employer == savedCell.employer &&
-        //                $0.salary == savedCell.salary &&
-        //                $0.id == savedCell.id
-        //            }) {
-        //                jobs[indexJob].isSelected = true
-        //            }
-        //        }
+    func saveSelectedCells() {
+        UserDefaults.standard.set(
+            Array(favoriteCells),
+            forKey: Constants.userFavoritesSavesName
+        )
     }
-    
-    //    func saveSelectedCells(selectedCells: JobsModel) {
-    //        savedSelectedCells = SelectedCellsSavingModel()
-    //        selectedCells.forEach {
-    //            self.savedSelectedCells.append(SelectedCellSavingModel(jobModel: $0))
-    //        }
-    //        UserDefaults.standard.set(
-    //            encodable: self.savedSelectedCells,
-    //            forKey: Constants.userSavesSelectedCellsName
-    //        )
-    //    }
 }
 
 // MARK: - Constants
 
 private enum Constants {
-    static var userSavesSelectedCellsName = "userSavesSelectedCells"
+    static var userFavoritesSavesName = "userFavoritesSavesName"
 }
