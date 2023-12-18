@@ -236,7 +236,7 @@ extension MainViewController: UICollectionViewDelegate {
 // MARK: - Loading data with network service
 
 extension MainViewController: MainViewProtocol {
-    func episodesLoaded() {
+    func createCollection() {
         guard let presenter else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }

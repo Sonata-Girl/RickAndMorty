@@ -34,7 +34,6 @@ protocol MainPresenterProtocol: AnyObject {
     func didSelectFavoriteCell(at indexCell: Int)
     func characterImageTapped(at indexCell: Int)
     func deleteCell(at index: Int)
-    func saveSelectedCells(selectedCells: EpisodeModels)
 }
 
 // MARK: - Presenter
@@ -42,14 +41,14 @@ protocol MainPresenterProtocol: AnyObject {
 final class MainViewPresenter: MainPresenterProtocol {
     weak var view: MainViewProtocol?
     let networkManager: NetworkServiceProtocol?
-    var router: RouterProtocol?
-//    let context = NSPersistentContainer.viewContext
+    let router: RouterProtocol?
     var episodes: EpisodeModels = []
     var filteredEpisodes: EpisodeModels = []
     var pageNumber = 1
     var isSubloading = false
     var pageInfo: PageInfo?
     private let cacheCharacter = NSCache<NSString, CacheCharacterWrapper>()
+    var favoriteCells = Set<Int>()
     
     required init(
         view: MainViewProtocol,
@@ -59,7 +58,7 @@ final class MainViewPresenter: MainPresenterProtocol {
         self.view = view
         self.networkManager = networkManager
         self.router = router
-        //            loadUserSaves()
+        loadUserSaves()
     }
 
     // MARK: Loading data method
@@ -70,8 +69,13 @@ final class MainViewPresenter: MainPresenterProtocol {
             switch result {
                 case .success(let episodesDto):
                     self.pageInfo = PageInfo(from: episodesDto.info)
-                    self.episodes += episodesDto.results.models
-                    //                        self.loadSelectedCellsSettings()
+                    self.episodes += episodesDto.results.models.map {
+                        var episodeModel = $0
+                        if self.favoriteCells.contains($0.id) {
+                            episodeModel.isFavorite.toggle()
+                        }
+                        return episodeModel
+                    }
                     self.view?.createCollection()
                 case .failure(let error):
                     self.view?.failure(error: error)
@@ -97,7 +101,10 @@ final class MainViewPresenter: MainPresenterProtocol {
             switch result {
                 case .success(let characterDto):
                     self.episodes[episodeIndex].character = characterDto.model
-                    loadCharacterImage(characterImageUrl: characterDto.model.imageUrl, indexItem: episodeIndex)
+                    loadCharacterImage(
+                        characterImageUrl: characterDto.model.imageUrl,
+                        indexItem: episodeIndex
+                    )
                 case .failure(let error):
                     self.view?.failure(error: error)
             }
@@ -112,7 +119,10 @@ final class MainViewPresenter: MainPresenterProtocol {
             self.episodes[indexItem].character?.imageData = imageData
             if let character = self.episodes[indexItem].character {
                 let characterModelWrapped = CacheCharacterWrapper(from: character)
-                self.cacheCharacter.setObject(characterModelWrapped, forKey: character.url.absoluteString as NSString)
+                self.cacheCharacter.setObject(
+                    characterModelWrapped,
+                    forKey: character.url.absoluteString as NSString
+                )
             }
             self.view?.updateCollection()
         }
@@ -121,10 +131,16 @@ final class MainViewPresenter: MainPresenterProtocol {
     // MARK: Change data methods
     
     func didSelectFavoriteCell(at indexCell: Int) {
-        self.episodes[indexCell].isFavorite.toggle()
-        #warning("todo saving in coredara?")
+        episodes[indexCell].isFavorite.toggle()
+        let episode = episodes[indexCell]
+        if episode.isFavorite {
+            favoriteCells.insert(episode.id)
+        } else {
+            favoriteCells.remove(episode.id)
+        }
         
-        self.view?.updateCollection()
+        saveSelectedCells()
+        view?.updateCollection()
     }
     
     func characterImageTapped(at indexCell: Int) {
@@ -139,21 +155,24 @@ final class MainViewPresenter: MainPresenterProtocol {
 
     // MARK: UserDefaults methods
     
-//    private func loadUserSaves() {
-
-//    }
+    private func loadUserSaves() {
+        guard let userFavoriteCells = UserDefaults.standard.value(
+            forKey: Constants.userFavoritesSavesName
+        ) as? [Int] else { return }
+        
+        favoriteCells = Set(userFavoriteCells)
+    }
     
-//    private func loadSelectedCellsSettings() {
-//
-//    }
-    
-    //    func saveSelectedCells(selectedCells: JobsModel) {
-
-    //    }
+    func saveSelectedCells() {
+        UserDefaults.standard.set(
+            Array(favoriteCells),
+            forKey: Constants.userFavoritesSavesName
+        )
+    }
 }
 
 // MARK: - Constants
 
 private enum Constants {
-    static var userSavesSelectedCellsName = "userSavesSelectedCells"
+    static var userFavoritesSavesName = "userFavoritesSavesName"
 }
