@@ -20,8 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let loadingDuration = 3
         launchScreenPresenter?.present(with: loadingDuration)
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(loadingDuration) + .seconds(1)) { [weak self] in
-            guard let self else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(loadingDuration) + .seconds(1)) {
             self.launchScreenPresenter?.dismiss(completion: {
                 self.launchScreenPresenter = nil
             })

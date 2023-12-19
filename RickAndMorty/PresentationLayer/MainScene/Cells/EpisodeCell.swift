@@ -13,16 +13,14 @@ protocol EpisodeCellDelegate: AnyObject {
     func deleteCell(at indexCell: Int)
 }
 
-//protocol MainViewEpisodeCellDelegate: FavoritesViewCellDelegate {
-//    func deleteCell(at indexCell: Int)
-//}
-//
-//protocol EpisodeCellDelegate: MainViewEpisodeCellDelegate {}
+extension EpisodeCellDelegate {
+    func deleteCell(at indexCell: Int) {}
+}
 
 final class EpisodeCell: UICollectionViewCell {
     
     weak var delegate: EpisodeCellDelegate?
-    var indexCell: Int?
+//    var idEpisode: Int?
        
     // MARK: UI elements
     
@@ -112,33 +110,8 @@ final class EpisodeCell: UICollectionViewCell {
         setDefaultStateCell()
     }
     
-    // MARK: Cell actions
-    
-    @objc private func selectedFavoriteCell() {
-        guard let indexCell else { return }
-        delegate?.selectFavoriteCell(at: indexCell)
-    }
-    
-    @objc private func characterImageTapped() {
-        guard let indexCell else { return }
-        delegate?.characterImageTapped(at: indexCell)
-        animateFavoriteButton()
-    }
-    
     func returnStateOfFavoriteImage() {
         animateFavoriteButton()
-    }
-    
-    private func animateFavoriteButton() {
-        UIView.animate(
-            withDuration: 0.3,
-            animations: {
-                self.favoriteButton.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
-            },
-            completion: { _ in UIView.animate(withDuration: 0.3) {
-                self.favoriteButton.transform = CGAffineTransform.identity
-            }
-        })
     }
 }
 // MARK: - Configure view
@@ -149,13 +122,7 @@ private extension EpisodeCell {
         
         let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe))
         swipeGesture.direction = .left
-        addGestureRecognizer(swipeGesture)
-       
-    }
-    
-    @objc private func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
-        guard let indexCell else { return }
-        delegate?.deleteCell(at: indexCell)
+        contentView.addGestureRecognizer(swipeGesture)
     }
     
     func setDefaultStateCell() {
@@ -168,6 +135,44 @@ private extension EpisodeCell {
             roundedRect: bounds.insetBy(dx: -1, dy: -1),
             cornerRadius: Constants.lightCornerRadius
         ).cgPath
+    }
+}
+
+// MARK: - Cell actions
+
+private extension EpisodeCell {
+    
+    func indexOfCell() -> Int? {
+        let superView = superview as? UICollectionView
+        guard let indexPath = superView?.collectionViewLayout.collectionView?.indexPath(for: self) else { return nil }
+        return indexPath.item
+    }
+
+    @objc func selectedFavoriteCell() {
+        guard let indexCell = indexOfCell() else { return }
+        delegate?.selectFavoriteCell(at: indexCell)
+    }
+    
+    @objc func characterImageTapped() {
+        guard let indexCell = indexOfCell() else { return }
+        delegate?.characterImageTapped(at: indexCell)
+    }
+    
+    @objc func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
+        guard let indexCell = indexOfCell() else { return }
+        delegate?.deleteCell(at: indexCell)
+    }
+    
+    private func animateFavoriteButton() {
+        UIView.animate(
+            withDuration: 0.3,
+            animations: {
+                self.favoriteButton.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            },
+            completion: { _ in UIView.animate(withDuration: 0.3) {
+                self.favoriteButton.transform = CGAffineTransform.identity
+            }
+        })
     }
 }
 
@@ -266,8 +271,7 @@ private extension EpisodeCell {
 // MARK: - Configure cell values
 
 extension EpisodeCell {
-    func configureCell(episodeModel: EpisodeModel, indexPathCell: Int) {
-        indexCell = indexPathCell
+    func configureCell(episodeModel: EpisodeModel) {
         characterNameLabel.text = episodeModel.character?.name
         episodeNumberLabel.text = episodeModel.episodeNumber
        
@@ -292,7 +296,6 @@ extension EpisodeCell {
             for: .normal
         )
         characterImage.contentMode = .scaleAspectFit
-        indexCell = nil
     }
     
 }

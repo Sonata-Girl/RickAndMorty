@@ -11,6 +11,7 @@ import Foundation
 
 protocol NetworkServiceProtocol {
     func getEpisodes(page: Int, completion: @escaping (Result<EpisodesDto, ErrorTypes>) -> Void)
+    func getEpisode(episodesStrings: [String], completion: @escaping (Result<EpisodeDtoModels, ErrorTypes>) -> Void)
     func getMultipleEpisodes(episodesStrings: [String], completion: @escaping (Result<EpisodeDtoModels, ErrorTypes>) -> Void)
     func getCharacter(characterUrl: URL, completion: @escaping (Result<CharacterDto, ErrorTypes>) -> Void)
     func loadImageData(from url: URL, completion: @escaping (Data?) -> Void)
@@ -20,6 +21,7 @@ protocol NetworkServiceProtocol {
 
 private enum ApiType {
     case getEpisodes
+    case getEpisode
     case getMultipleEpisodes
     case getCharacter
  
@@ -30,6 +32,7 @@ private enum ApiType {
     var path: String {
         switch self{
         case .getEpisodes: return "/episode?page="
+        case .getEpisode: return "/episode/"
         case .getMultipleEpisodes: return "/episode/"
         case .getCharacter: return "/character/"
         }
@@ -92,6 +95,18 @@ final class NetworkService: NetworkServiceProtocol {
             switch result {
                 case .success(let episodes):
                     completion(.success(episodes))
+                case .failure(let error):
+                    completion(.failure(error))
+            }
+        }
+    }
+    
+    func getEpisode(episodesStrings: [String], completion: @escaping (Result<EpisodeDtoModels, ErrorTypes>) -> Void) {
+        guard let url = URL(string: api.getEpisode.urlString + episodesStrings.joined(separator: ",")) else { return }
+        fetchJsonData(from: url) { (result: Result<EpisodeDto, ErrorTypes>) in
+            switch result {
+                case .success(let episode):
+                    completion(.success([episode]))
                 case .failure(let error):
                     completion(.failure(error))
             }

@@ -39,19 +39,5 @@ extension EpisodeModel {
     }
 }
 
-#warning("Clear")
-//extension EpisodeModel {
-//    init(from cache: CacheEpisodeWrapper){
-//        self.id = cache.id
-//        self.episodeUrl = cache.episodeUrl
-//        self.episodeNumber = cache.episodeNumber
-//        self.isFavorite = cache.isFavorite
-//        self.characterUrl = cache.characterUrl
-//        if let characterWrapped = cache.character {
-//            self.character = CharacterModel(from: characterWrapped)
-//        }
-//    }
-//}
-
 // MARK: - Date convert methods
 typealias EpisodeModels = [EpisodeModel]

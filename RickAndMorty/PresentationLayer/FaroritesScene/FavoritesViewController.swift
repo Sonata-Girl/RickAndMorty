@@ -42,8 +42,11 @@ class FavoritesViewController: UIViewController {
         setupLayout()
         configureNavigationController()
         setupDataSource()
-        
-        presenter?.getEpisodes()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        presenter?.loadFavoriteCells()
     }
 }
 
@@ -119,32 +122,46 @@ private extension FavoritesViewController {
             }
             
             cell.delegate = self
-            cell.configureCell(episodeModel: item, indexPathCell: indexPath.item)
+            cell.configureCell(episodeModel: item)
             return cell
         }
-        
     }
     
-    func createDataSnapshot(items: EpisodeModels) {
+//    var externalAction: (() -> Void)?
+//    
+//    func internalAction() {
+//        print("Some action inside")
+//        externalAction?()
+//    }
+    
+    func createDataSnapshot(episodes: EpisodeModels) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, EpisodeModel>()
         snapshot.appendSections([0])
-        snapshot.appendItems(items)
+        snapshot.appendItems(episodes)
         dataSource?.apply(
             snapshot,
             animatingDifferences: false
         )
     }
     
-    func updateDataSnapshot(withAnimation: Bool = false) {
-        guard let presenter,
-            var updatedSnapshot = dataSource?.snapshot() else { return }
-            updatedSnapshot.reloadItems(presenter.episodes
-            )
-        self.dataSource?.apply(
+    func updateDataSnapshot(episodes: EpisodeModels) {
+        guard var updatedSnapshot = dataSource?.snapshot() else { return }
+            updatedSnapshot.reloadItems(episodes)
+        dataSource?.apply(
             updatedSnapshot,
-            animatingDifferences: withAnimation
+            animatingDifferences: false
         )
     }
+    
+    func deleteItemFromDataSnapshot(episodes: EpisodeModels) {
+        guard var updatedSnapshot = dataSource?.snapshot() else { return }
+        updatedSnapshot.deleteItems(episodes)
+        dataSource?.apply(
+            updatedSnapshot,
+            animatingDifferences: true
+        )
+    }
+   
 }
 
 // MARK: - UICollectionViewDelegate
@@ -163,42 +180,42 @@ extension FavoritesViewController: UICollectionViewDelegate {
 //            presenter.startSubloadEpisodes()
 //        }
     }
+    
+    
 }
 
 // MARK: - Loading data with network service
 
 extension FavoritesViewController: FavoritesViewProtocol {
-    func createCollection() {
-        guard let presenter else { return }
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.createDataSnapshot(items: presenter.episodes)
+    func createCollection(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.createDataSnapshot(episodes: episodes)
         }
     }
     
-    func updateCollection() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.updateDataSnapshot()
+    func updateCollection(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.updateDataSnapshot(episodes: episodes)
+        }
+    }
+    
+    func deleteItem(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.deleteItemFromDataSnapshot(episodes: episodes)
         }
     }
     
     func failure(error: Error) {
         print(error.localizedDescription)
     }
+
 }
 
 // MARK: - Handle actions methods
 
 extension FavoritesViewController: EpisodeCellDelegate {
-    func deleteCell(at indexCell: Int) {}
-    
     func selectFavoriteCell(at indexCell: Int) {
         presenter?.didSelectFavoriteCell(at: indexCell)
-        let indexPath = IndexPath(row: indexCell, section: 0)
-            
-        guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
-        cell.returnStateOfFavoriteImage()
     }
     
     func characterImageTapped(at indexCell: Int) {

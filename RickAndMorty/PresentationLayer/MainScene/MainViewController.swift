@@ -65,7 +65,11 @@ final class MainViewController: UIViewController {
 //        guard let indexPath = episodesCollectionView.indexPathForItem(at: gestureRecognizer.location(in: episodesCollectionView)) else { return }
 //        presenter?.deleteCell(at: indexPath.item)
 //    }
-
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        presenter?.loadFavoriteCells()
+    }
 }
 
 // MARK: - Configure view properties
@@ -167,34 +171,41 @@ private extension MainViewController {
             }
             
             cell.delegate = self
-            cell.configureCell(episodeModel: item, indexPathCell: indexPath.item)
+            cell.configureCell(episodeModel: item)
             return cell
         }
         
     }
     
-    func createDataSnapshot(items: EpisodeModels) {
+    func createDataSnapshot(episodes: EpisodeModels) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, EpisodeModel>()
         snapshot.appendSections([0])
-        snapshot.appendItems(items)
+        snapshot.appendItems(episodes)
         dataSource?.apply(
             snapshot,
             animatingDifferences: false
         )
     }
     
-    func updateDataSnapshot(withAnimation: Bool = false) {
-        guard let presenter,
-            var updatedSnapshot = dataSource?.snapshot() else { return }
+    func updateDataSnapshot(episodes: EpisodeModels) {
+        guard var updatedSnapshot = dataSource?.snapshot() else { return }
         if isSearchBarEmpty {
-            updatedSnapshot.reloadItems(presenter.episodes)
-//            updatedSnapshot.appendItems(presenter.episodes, toSection: 0)
+            updatedSnapshot.reloadItems(episodes)
         } else {
-            updatedSnapshot.reloadItems(presenter.filteredEpisodes)
+            updatedSnapshot.reloadItems(episodes)
         }
         self.dataSource?.apply(
             updatedSnapshot,
-            animatingDifferences: withAnimation
+            animatingDifferences: false
+        )
+    }
+    
+    func deleteItemFromDataSnapshot(episodes: EpisodeModels) {
+        guard var updatedSnapshot = dataSource?.snapshot() else { return }
+        updatedSnapshot.deleteItems(episodes)
+        dataSource?.apply(
+            updatedSnapshot,
+            animatingDifferences: true
         )
     }
 }
@@ -223,7 +234,6 @@ extension MainViewController: UICollectionViewDelegate {
         }
     }
     
-    
 //    func getReservedJobs() -> EpisodeModels {
 //        guard let jobs = presenter?.jobs else { return JobsModel() }
 //        return jobs.filter { $0.isSelected }
@@ -233,19 +243,28 @@ extension MainViewController: UICollectionViewDelegate {
 // MARK: - Loading data with network service
 
 extension MainViewController: MainViewProtocol {
-    func createCollection() {
-        guard let presenter else { return }
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.createDataSnapshot(items: presenter.episodes)
+    func createCollection(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.createDataSnapshot(episodes: episodes)
         }
     }
     
-    func updateCollection() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.updateDataSnapshot()
+    func updateCollection(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.updateDataSnapshot(episodes: episodes)
         }
+    }
+    
+    func deleteItem(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.deleteItemFromDataSnapshot(episodes: episodes)
+        }
+    }
+    
+    func endAnimationOfFavoriteButton(indexCell: Int) {
+         let indexPath = IndexPath(row: indexCell, section: 0)
+        guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
+        cell.returnStateOfFavoriteImage()
     }
     
     func failure(error: Error) {
@@ -256,34 +275,15 @@ extension MainViewController: MainViewProtocol {
 // MARK: - Handle actions methods
 
 extension MainViewController: EpisodeCellDelegate {
-    
-    func selectFavoriteCell(at indexCell: Int) {
-        presenter?.didSelectFavoriteCell(at: indexCell)
-        let indexPath = IndexPath(row: indexCell, section: 0)
-            
-        guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
-        cell.returnStateOfFavoriteImage()
+    func selectFavoriteCell(at idEpisode: Int) {
+        presenter?.didSelectFavoriteCell(at: idEpisode)
     }
     
-    func characterImageTapped(at indexCell: Int) {
-        presenter?.characterImageTapped(at: indexCell)
+    func characterImageTapped(at idEpisode: Int) {
+        presenter?.characterImageTapped(at: idEpisode)
     }
-    
-    
-    func deleteCell(at indexCell: Int) {
-        presenter?.deleteCell(at:indexCell)
+     
+    func deleteCell(at idEpisode: Int) {
+        presenter?.deleteCell(at:idEpisode)
     }
-//    @objc func reserveButtonPressed() {
-//        showSumSalaryAlert()
-//    }
-//    
-//    func showSumSalaryAlert() {
-//        let reservedJobs = getReservedJobs().map { $0.salary }.reduce( 0, + )
-//  
-//        let message = "Вы заработали \(String(format: "%.2f", reservedJobs)) рублей"
-//        let alert = UIAlertController(title: "", message: message, preferredStyle: .alert)
-//        let okAction = UIAlertAction(title: "Ок", style: .default, handler: nil)
-//        alert.addAction(okAction)
-//        present(alert, animated: true)
-//    }
 }

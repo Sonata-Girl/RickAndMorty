@@ -36,7 +36,6 @@
 		67F3E56C2B290F3E0067D505 /* MainViewPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E56B2B290F3E0067D505 /* MainViewPresenter.swift */; };
 		67F3E56E2B2913E80067D505 /* EpisodeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E56D2B2913E80067D505 /* EpisodeModel.swift */; };
 		67F3E5712B298ED50067D505 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5702B298ED50067D505 /* NetworkService.swift */; };
-		67F3E5732B2994E50067D505 /* CacheEpisodeWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5722B2994E50067D505 /* CacheEpisodeWrapper.swift */; };
 		67F3E5762B299F270067D505 /* DetailVCBulder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5752B299F270067D505 /* DetailVCBulder.swift */; };
 		67F3E5782B299F740067D505 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5772B299F740067D505 /* DetailViewController.swift */; };
 		67F3E57A2B29B95A0067D505 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5792B29B95A0067D505 /* TabBarController.swift */; };
@@ -78,7 +77,6 @@
 		67F3E56B2B290F3E0067D505 /* MainViewPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewPresenter.swift; sourceTree = "<group>"; };
 		67F3E56D2B2913E80067D505 /* EpisodeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeModel.swift; sourceTree = "<group>"; };
 		67F3E5702B298ED50067D505 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
-		67F3E5722B2994E50067D505 /* CacheEpisodeWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheEpisodeWrapper.swift; sourceTree = "<group>"; };
 		67F3E5752B299F270067D505 /* DetailVCBulder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailVCBulder.swift; sourceTree = "<group>"; };
 		67F3E5772B299F740067D505 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 		67F3E5792B29B95A0067D505 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
@@ -244,7 +242,6 @@
 			children = (
 				67F3E5702B298ED50067D505 /* NetworkService.swift */,
 				672B9C812B2B705F004D7B68 /* ErrorTypes.swift */,
-				67F3E5722B2994E50067D505 /* CacheEpisodeWrapper.swift */,
 				672B9C832B2D057C004D7B68 /* CacheCharacterWrapper.swift */,
 			);
 			path = NetworkService;
@@ -374,7 +371,6 @@
 				672B9C8C2B2E1249004D7B68 /* DetailViewPresenter.swift in Sources */,
 				672B9C842B2D057C004D7B68 /* CacheCharacterWrapper.swift in Sources */,
 				67F3E56A2B290EF60067D505 /* EpisodeDto.swift in Sources */,
-				67F3E5732B2994E50067D505 /* CacheEpisodeWrapper.swift in Sources */,
 				67F3E5762B299F270067D505 /* DetailVCBulder.swift in Sources */,
 				672B9C802B2B6DA0004D7B68 /* CharacterModel.swift in Sources */,
 				67F3E55D2B2898AB0067D505 /* MainVCBuilder.swift in Sources */,

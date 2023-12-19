@@ -7,12 +7,15 @@
 //
 
 import Foundation
+import CoreData
 
 // MARK: - View protocol
 
 protocol MainViewProtocol: AnyObject {
-    func createCollection()
-    func updateCollection()
+    func createCollection(episodes: EpisodeModels)
+    func updateCollection(episodes: EpisodeModels)
+    func deleteItem(episodes: EpisodeModels)
+    func endAnimationOfFavoriteButton(indexCell: Int)
     func failure(error: Error)
 }
 
@@ -30,9 +33,10 @@ protocol MainPresenterProtocol: AnyObject {
     func getEpisodes(subload: Bool)
     func startSubloadEpisodes()
     func getCharacter(characterUrl: URL, episodeIndex: Int)
-    func didSelectFavoriteCell(at indexCell: Int)
-    func characterImageTapped(at indexCell: Int)
-    func deleteCell(at index: Int)
+    func didSelectFavoriteCell(at idEpisode: Int)
+    func characterImageTapped(at idEpisode: Int)
+    func deleteCell(at idEpisode: Int)
+    func loadFavoriteCells()
 }
 
 // MARK: - Presenter
@@ -59,10 +63,10 @@ final class MainViewPresenter: MainPresenterProtocol {
         self.view = view
         self.networkManager = networkManager
         self.router = router
-        loadUserSaves()
+        loadFavoritesFromFile()
     }
 
-    // MARK: Loading data method
+    // MARK: Loading data methods
     
     func getEpisodes(subload: Bool = false) {
         networkManager?.getEpisodes(page: pageNumber) { [weak self] result in
@@ -73,11 +77,11 @@ final class MainViewPresenter: MainPresenterProtocol {
                     self.episodes += episodesDto.results.models.map {
                         var episodeModel = $0
                         if self.favoriteEpisodes.contains($0.id) {
-                            episodeModel.isFavorite.toggle()
+                            episodeModel.isFavorite = true
                         }
                         return episodeModel
                     }
-                    self.view?.createCollection()
+                    self.view?.createCollection(episodes: self.episodes)
                 case .failure(let error):
                     self.view?.failure(error: error)
             }
@@ -91,20 +95,23 @@ final class MainViewPresenter: MainPresenterProtocol {
         getEpisodes(subload: isSubloading)
     }
     
+    // MARK: GET character
+    
     func getCharacter(characterUrl: URL, episodeIndex: Int) {
+        guard let indexEpisode = episodes.indices.contains(episodeIndex) ? episodeIndex : nil else { return }
         if let cachedCharacter = cacheCharacter.object(forKey: characterUrl.absoluteString as NSString) {
-            self.episodes[episodeIndex].character = CharacterModel(from: cachedCharacter)
-            self.view?.updateCollection()
+            self.episodes[indexEpisode].character = CharacterModel(from: cachedCharacter)
+            self.view?.updateCollection(episodes: episodes)
             return
         }
         networkManager?.getCharacter(characterUrl: characterUrl) { [weak self] result in
             guard let self else { return }
             switch result {
                 case .success(let characterDto):
-                    self.episodes[episodeIndex].character = characterDto.model
+                    self.episodes[indexEpisode].character = characterDto.model
                     loadCharacterImage(
                         characterImageUrl: characterDto.model.imageUrl,
-                        indexItem: episodeIndex
+                        indexItem: indexEpisode
                     )
                 case .failure(let error):
                     self.view?.failure(error: error)
@@ -113,11 +120,14 @@ final class MainViewPresenter: MainPresenterProtocol {
         }
     }
     
+    // MARK: GET character image
+   
     func loadCharacterImage(characterImageUrl: URL, indexItem: Int) {
+        guard let indexEpisode = episodes.indices.contains(indexItem) ? indexItem : nil else { return }
         networkManager?.loadImageData(from: characterImageUrl) { [weak self] result in
             guard let self,
                   let imageData = result else { return }
-            self.episodes[indexItem].character?.imageData = imageData
+            self.episodes[indexEpisode].character?.imageData = imageData
             if let character = self.episodes[indexItem].character {
                 let characterModelWrapped = CacheCharacterWrapper(from: character)
                 self.cacheCharacter.setObject(
@@ -125,23 +135,25 @@ final class MainViewPresenter: MainPresenterProtocol {
                     forKey: character.url.absoluteString as NSString
                 )
             }
-            self.view?.updateCollection()
+            self.view?.updateCollection(episodes: episodes)
         }
     }
     
     // MARK: Change data methods
     
     func didSelectFavoriteCell(at indexCell: Int) {
+//        let episode = episodes[indexCell]
         episodes[indexCell].isFavorite.toggle()
-        let episode = episodes[indexCell]
-        if episode.isFavorite {
-            favoriteEpisodes.insert(episode.id)
+        
+        if episodes[indexCell].isFavorite {
+            favoriteEpisodes.insert(episodes[indexCell].id)
         } else {
-            favoriteEpisodes.remove(episode.id)
+            favoriteEpisodes.remove(episodes[indexCell].id)
         }
         
-        saveSelectedCells()
-        view?.updateCollection()
+        saveFavoritesToFile()
+        view?.updateCollection(episodes: episodes)
+        view?.endAnimationOfFavoriteButton(indexCell: indexCell)
     }
     
     func characterImageTapped(at indexCell: Int) {
@@ -149,26 +161,62 @@ final class MainViewPresenter: MainPresenterProtocol {
         router?.showDetailViewController(characterModel: character)
     }
     
-    func deleteCell(at index: Int) {
-        episodes.remove(at: index)
-        view?.createCollection()
+    func deleteCell(at indexCell: Int) {
+        let episode = episodes.remove(at: indexCell)
+//        view?.createCollection(episodes: episodes)
+        view?.deleteItem(episodes: [episode])
     }
 
-    // MARK: UserDefaults methods
-    
-    private func loadUserSaves() {
-        guard let userFavoriteCells = UserDefaults.standard.value(
-            forKey: Constants.userFavoritesSavesName
-        ) as? [Int] else { return }
+    // MARK: Saving favorites methods
+    func loadFavoriteCells() {
+        loadFavoritesFromFile()
         
-        favoriteEpisodes = Set(userFavoriteCells)
+        episodes = episodes.map {
+            var episodeModel = $0
+            if self.favoriteEpisodes.contains($0.id) {
+                episodeModel.isFavorite = true
+            } else {
+                episodeModel.isFavorite = false
+            }
+            return episodeModel
+        }
+        self.view?.updateCollection(episodes: episodes)
     }
     
-    func saveSelectedCells() {
-        UserDefaults.standard.set(
-            Array(favoriteEpisodes),
-            forKey: Constants.userFavoritesSavesName
-        )
+    func saveFavoritesToFile() {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+        let fileName = Constants.userFavoritesSavesName
+        let fileURL = documentsDirectory.appendingPathComponent(fileName) // добавляет имя (уид)файла к пути
+
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            do {
+                try FileManager.default.removeItem(atPath: fileURL.path)
+                print("Removed old file")
+            } catch let error {
+                print("couldn't remove file with error", error)
+            }
+        }
+        
+        do {
+            let arrayString = favoriteEpisodes.map(String.init).joined(separator: "\n")
+            try arrayString.write(toFile: fileURL.path, atomically: true, encoding: .utf8)
+            print("saved file")
+        } catch let error {
+            print("error saving file with error", error)
+        }
+    }
+    
+    func loadFavoritesFromFile() {
+        if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first{
+            let arrayString = documentsDirectory.appendingPathComponent(Constants.userFavoritesSavesName)
+            do {
+                let content = try String(contentsOfFile: arrayString.path, encoding: .utf8)
+                favoriteEpisodes = Set(content.components(separatedBy: "\n").compactMap(Int.init))
+                print("load in main file")
+            } catch let error {
+                print("error loading file with error", error)
+            }
+        }
     }
 }
 
