@@ -24,11 +24,28 @@ final class MainViewController: UIViewController {
     
     // MARK: UI elements
     
-    private var searchController: UISearchController = {
-        let sc = UISearchController()
-        sc.searchBar.placeholder = "Поиск"
-        sc.searchBar.searchBarStyle = .minimal
-        return sc
+    private lazy var searchController: UISearchController = {
+        let searchController = UISearchController()
+        searchController.searchBar.searchTextField.borderStyle = .none
+        searchController.searchBar.barTintColor = UIColor.white
+        searchController.searchBar.searchTextField.font = UIFont(name: "Roboto-Thin", size: 20)
+        searchController.searchBar.placeholder = "Name or episode (ex.S01E01)..."
+        searchController.searchBar.searchTextField.layer.borderColor = UIColor.gray.cgColor
+        searchController.searchBar.searchTextField.layer.borderWidth = 1
+        searchController.searchBar.searchTextField.layer.cornerRadius = 8
+        searchController.searchBar.searchTextField.frame.size.height = 50
+        searchController.searchBar.searchTextField.translatesAutoresizingMaskIntoConstraints = false
+        searchController.searchBar.translatesAutoresizingMaskIntoConstraints = false
+        return searchController
+    }()
+    
+    private var imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(named: "NameLogo")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
     }()
     
     private lazy var episodesCollectionView: UICollectionView = {
@@ -61,11 +78,6 @@ final class MainViewController: UIViewController {
         presenter?.getEpisodes(subload: false)
     }
 
-//    @objc private func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
-//        guard let indexPath = episodesCollectionView.indexPathForItem(at: gestureRecognizer.location(in: episodesCollectionView)) else { return }
-//        presenter?.deleteCell(at: indexPath.item)
-//    }
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         presenter?.loadFavoriteCells()
@@ -85,6 +97,7 @@ private extension MainViewController {
 private extension MainViewController {
     func additionSubviews() {
         view.addSubview(episodesCollectionView)
+        navigationController?.navigationBar.addSubview(imageView)
     }
 }
 
@@ -93,6 +106,21 @@ private extension MainViewController {
 private extension MainViewController {
     func setupLayout() {
         NSLayoutConstraint.activate([
+            searchController.searchBar.searchTextField.leadingAnchor.constraint(
+                equalTo: searchController.searchBar.leadingAnchor,
+                constant: 20
+            ),
+            searchController.searchBar.trailingAnchor.constraint(
+                equalTo: searchController.searchBar.searchTextField.trailingAnchor,
+                constant: 20
+            ),
+            searchController.searchBar.searchTextField.heightAnchor.constraint(
+                equalTo: searchController.searchBar.heightAnchor,
+                multiplier: 1
+            )
+        ])
+        
+        NSLayoutConstraint.activate([
             episodesCollectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             episodesCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             episodesCollectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
@@ -100,13 +128,40 @@ private extension MainViewController {
         ])
     }
 }
+ 
+extension MainViewController: UISearchBarDelegate {
+    
+//    searc
+}
 
 // MARK: - Configure navigation controller
 
 private extension MainViewController {
     func configureNavigationController() {
         navigationItem.searchController = searchController
-//        searchController.searchResultsUpdater = self
+        searchController.searchResultsUpdater = self
+        
+        setupLayoutNavigationBar()
+    }
+    
+    func setupLayoutNavigationBar() {
+        if let navigationBar = navigationController?.navigationBar {
+            navigationBar.prefersLargeTitles = true
+            NSLayoutConstraint.activate([
+                imageView.leftAnchor.constraint(
+                    equalTo: navigationBar.leftAnchor,
+                    constant: 10
+                ),
+                navigationBar.rightAnchor.constraint(
+                    equalTo: imageView.rightAnchor,
+                    constant: 10
+                ),
+                imageView.heightAnchor.constraint(
+                    equalTo: navigationBar.heightAnchor,
+                    multiplier: 0.6
+                )
+            ])
+        }
     }
     
 //    func filterContentForSearchText(_ searchText: String) {
@@ -129,12 +184,12 @@ private extension MainViewController {
 
 // MARK: - Search methods
 
-//extension MainViewController: UISearchResultsUpdating {
-//    func updateSearchResults(for searchController: UISearchController) {
-//        guard let filter = searchController.searchBar.text else { return }
+extension MainViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let filter = searchController.searchBar.text else { return }
 //        filterContentForSearchText(filter)
-//    }
-//}
+    }
+}
 
 // MARK: - Collection layout methods
 
@@ -213,12 +268,6 @@ private extension MainViewController {
 // MARK: - UICollectionViewDelegate
 
 extension MainViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        guard let presenter else { return }
-//        presenter.jobs[indexPath.item].isSelected.toggle()
-//        updateDataSnapshot()
-//        saveUserSettings()
-    }
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let lastItem = collectionView.numberOfItems(inSection: 0) - 1

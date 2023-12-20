@@ -160,22 +160,15 @@ private extension DetailViewController {
     }
     
     private func setupNavigationBarButtons() {
-        let backButton = UIBarButtonItem(
-            image: UIImage(systemName: "BackButton"),
-            style: .plain, 
-            target: self,
-            action: #selector(backButtonTapped)
-        )
-        
-        let navBarImage = UIBarButtonItem(
-            image: UIImage(systemName: "NavBarImage"),
-            style: .plain,
-            target: nil,
-            action: nil
-        )
-        
-        navigationItem.leftBarButtonItem?.image = UIImage(systemName: "BackButton")
-        navigationItem.rightBarButtonItem = navBarImage
+        let backButtonView = UIButton()
+        backButtonView.setImage(UIImage(named: "BackButton"), for: .normal)
+        backButtonView.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
+        let backButton = UIBarButtonItem(customView: backButtonView)
+        navigationItem.leftBarButtonItem = backButton
+
+        let charactersView = UIImageView(image: UIImage(named: "NavBarImage"))
+        let characterButton = UIBarButtonItem(customView: charactersView)
+        navigationItem.rightBarButtonItem = characterButton
     }
     
     @objc private func backButtonTapped() {

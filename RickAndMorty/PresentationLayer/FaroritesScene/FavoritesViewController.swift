@@ -84,8 +84,6 @@ private extension FavoritesViewController {
 private extension FavoritesViewController {
     func configureNavigationController() {
         navigationItem.title = "Favorites episodes"
-//        navigationItem.tit
-//        searchController.searchResultsUpdater = self
     }
 }
 
@@ -127,13 +125,6 @@ private extension FavoritesViewController {
         }
     }
     
-//    var externalAction: (() -> Void)?
-//    
-//    func internalAction() {
-//        print("Some action inside")
-//        externalAction?()
-//    }
-    
     func createDataSnapshot(episodes: EpisodeModels) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, EpisodeModel>()
         snapshot.appendSections([0])
@@ -166,23 +157,7 @@ private extension FavoritesViewController {
 
 // MARK: - UICollectionViewDelegate
 
-extension FavoritesViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-//        let lastItem = collectionView.numberOfItems(inSection: 0) - 1
-//        guard indexPath.item == lastItem else { return }
-//
-//        guard
-//            let presenter = presenter,
-//            let _ = presenter.pageInfo?.next
-//        else { return }
-//        
-//        if !presenter.isSubloading {
-//            presenter.startSubloadEpisodes()
-//        }
-    }
-    
-    
-}
+extension FavoritesViewController: UICollectionViewDelegate {}
 
 // MARK: - Loading data with network service
 
