@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="NameLogo" translatesAutoresizingMaskIntoConstraints="NO" id="H9N-15-Gr4">
+                                <rect key="frame" x="34" y="120" width="325" height="105"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="105" id="AcT-za-JNK"/>
+                                </constraints>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LoadingLogo" translatesAutoresizingMaskIntoConstraints="NO" id="yb9-zI-TzW">
+                                <rect key="frame" x="46.666666666666657" y="291" width="300" height="270"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="300" id="1qX-UW-zQ9"/>
+                                    <constraint firstAttribute="height" constant="270" id="vo1-DU-cWd"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="yb9-zI-TzW" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="93Z-oB-eLy"/>
+                            <constraint firstItem="yb9-zI-TzW" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="9cv-bW-A3p"/>
+                            <constraint firstItem="H9N-15-Gr4" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" constant="120" id="QcP-KL-UEv"/>
+                            <constraint firstItem="H9N-15-Gr4" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="34" id="cs4-tU-RK4"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="H9N-15-Gr4" secondAttribute="trailing" constant="34" id="hP2-jN-dvp"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="LoadingLogo" width="257" height="273"/>
+        <image name="NameLogo" width="723" height="212"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>
