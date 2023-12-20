@@ -20,8 +20,7 @@ extension EpisodeCellDelegate {
 final class EpisodeCell: UICollectionViewCell {
     
     weak var delegate: EpisodeCellDelegate?
-//    var idEpisode: Int?
-       
+
     // MARK: UI elements
     
     private let mainView: UIView = {
@@ -105,36 +104,22 @@ final class EpisodeCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        setDefaultStateCell()
-    }
-    
     func returnStateOfFavoriteImage() {
         animateFavoriteButton()
     }
 }
+
 // MARK: - Configure view
 
 private extension EpisodeCell {
     func configureView() {
         backgroundColor = .white
+        layer.cornerRadius = Constants.lightCornerRadius
+        addShadow()
         
         let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe))
         swipeGesture.direction = .left
         contentView.addGestureRecognizer(swipeGesture)
-    }
-    
-    func setDefaultStateCell() {
-        layer.cornerRadius = Constants.lightCornerRadius
-        layer.shadowOffset = CGSize(width: 0, height: 1)
-        layer.shadowRadius = 2
-        layer.shadowColor = UIColor.black.withAlphaComponent(0.7).cgColor
-        layer.shadowOpacity = 0.5
-        layer.shadowPath = UIBezierPath(
-            roundedRect: bounds.insetBy(dx: -1, dy: -1),
-            cornerRadius: Constants.lightCornerRadius
-        ).cgPath
     }
 }
 

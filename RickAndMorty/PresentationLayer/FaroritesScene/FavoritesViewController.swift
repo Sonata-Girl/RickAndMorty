@@ -91,7 +91,7 @@ private extension FavoritesViewController {
 
 private extension FavoritesViewController {
     func createLayout() -> UICollectionViewCompositionalLayout {
-        let layoutSection = CustomLayoutSection.shared.create()
+        let layoutSection = CustomLayoutSection.shared.create(showHeader: false)
         return UICollectionViewCompositionalLayout(section: layoutSection)
     }
 }

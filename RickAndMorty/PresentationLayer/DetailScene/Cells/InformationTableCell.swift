@@ -45,7 +45,7 @@ final class InformationTableCell: UITableViewHeaderFooterView {
 
 private extension InformationTableCell {
     func setupHierarchy() {
-        addSubview(title)
+        contentView.addSubview(title)
     }
 }
 
@@ -54,10 +54,16 @@ private extension InformationTableCell {
 private extension InformationTableCell {
     func setupLayout() {
         NSLayoutConstraint.activate([
-            title.topAnchor.constraint(equalTo: topAnchor),
-            title.bottomAnchor.constraint(equalTo: bottomAnchor),
-            title.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
-            trailingAnchor.constraint(equalTo: title.trailingAnchor,constant: 20)
+            title.topAnchor.constraint(equalTo: contentView.topAnchor),
+            title.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            title.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor,
+                constant: 10
+            ),
+            trailingAnchor.constraint(
+                equalTo: title.trailingAnchor,
+                constant: 20
+            )
         ])
     }
 }

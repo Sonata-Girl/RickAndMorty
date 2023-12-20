@@ -7,12 +7,16 @@
 
 import UIKit
 
+enum SearchType {
+    case name, episode
+}
+
 final class MainViewController: UIViewController {
     
     // MARK: Properties
     
     var presenter: MainPresenterProtocol?
-    private var dataSource: UICollectionViewDiffableDataSource<Int, EpisodeModel>?
+    private var dataSource: UICollectionViewDiffableDataSource<SectionLayoutKind, EpisodeModel>?
     
     private var isSearchBarEmpty: Bool {
         return searchController.searchBar.text?.isEmpty ?? true
@@ -22,7 +26,11 @@ final class MainViewController: UIViewController {
         return searchController.isActive && !isSearchBarEmpty
     }
     
+    private var searchBy: SearchType?
+    
     // MARK: UI elements
+    
+    private var filtersButtonHeightConstraint: NSLayoutConstraint!
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController()
@@ -32,14 +40,14 @@ final class MainViewController: UIViewController {
         searchController.searchBar.placeholder = "Name or episode (ex.S01E01)..."
         searchController.searchBar.searchTextField.layer.borderColor = UIColor.gray.cgColor
         searchController.searchBar.searchTextField.layer.borderWidth = 1
-        searchController.searchBar.searchTextField.layer.cornerRadius = 8
+        searchController.searchBar.searchTextField.layer.cornerRadius = Constants.lightCornerRadius
         searchController.searchBar.searchTextField.frame.size.height = 50
         searchController.searchBar.searchTextField.translatesAutoresizingMaskIntoConstraints = false
         searchController.searchBar.translatesAutoresizingMaskIntoConstraints = false
         return searchController
     }()
     
-    private var imageView: UIImageView = {
+    private var logoImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFit
@@ -47,7 +55,7 @@ final class MainViewController: UIViewController {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
-    
+
     private lazy var episodesCollectionView: UICollectionView = {
         let layout = createLayout()
         let collectionView = UICollectionView(
@@ -57,6 +65,11 @@ final class MainViewController: UIViewController {
         collectionView.register(
             EpisodeCell.self,
             forCellWithReuseIdentifier: EpisodeCell.identifier
+        )
+        collectionView.register(
+            HeaderEpisodes.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: HeaderEpisodes.identifier
         )
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
@@ -97,7 +110,7 @@ private extension MainViewController {
 private extension MainViewController {
     func additionSubviews() {
         view.addSubview(episodesCollectionView)
-        navigationController?.navigationBar.addSubview(imageView)
+        navigationController?.navigationBar.addSubview(logoImageView)
     }
 }
 
@@ -105,14 +118,30 @@ private extension MainViewController {
 
 private extension MainViewController {
     func setupLayout() {
+        let navigationBar = navigationController?.navigationBar ?? UINavigationBar()
+        NSLayoutConstraint.activate([
+            logoImageView.leftAnchor.constraint(
+                equalTo: navigationBar.leftAnchor,
+                constant: Constants.mediumInset
+            ),
+            navigationBar.rightAnchor.constraint(
+                equalTo: logoImageView.rightAnchor,
+                constant: Constants.mediumInset
+            ),
+            logoImageView.heightAnchor.constraint(
+                equalTo: navigationBar.heightAnchor,
+                multiplier: 0.6
+            )
+        ])
+        
         NSLayoutConstraint.activate([
             searchController.searchBar.searchTextField.leadingAnchor.constraint(
                 equalTo: searchController.searchBar.leadingAnchor,
-                constant: 20
+                constant: Constants.mediumInset
             ),
             searchController.searchBar.trailingAnchor.constraint(
                 equalTo: searchController.searchBar.searchTextField.trailingAnchor,
-                constant: 20
+                constant: Constants.mediumInset
             ),
             searchController.searchBar.searchTextField.heightAnchor.constraint(
                 equalTo: searchController.searchBar.heightAnchor,
@@ -121,10 +150,13 @@ private extension MainViewController {
         ])
         
         NSLayoutConstraint.activate([
-            episodesCollectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            episodesCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            episodesCollectionView.topAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.topAnchor,
+                constant: 10
+            ),
+            episodesCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             episodesCollectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            episodesCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            episodesCollectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
     }
 }
@@ -140,30 +172,9 @@ private extension MainViewController {
     func configureNavigationController() {
         navigationItem.searchController = searchController
         searchController.searchResultsUpdater = self
-        
-        setupLayoutNavigationBar()
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
-    
-    func setupLayoutNavigationBar() {
-        if let navigationBar = navigationController?.navigationBar {
-            navigationBar.prefersLargeTitles = true
-            NSLayoutConstraint.activate([
-                imageView.leftAnchor.constraint(
-                    equalTo: navigationBar.leftAnchor,
-                    constant: 10
-                ),
-                navigationBar.rightAnchor.constraint(
-                    equalTo: imageView.rightAnchor,
-                    constant: 10
-                ),
-                imageView.heightAnchor.constraint(
-                    equalTo: navigationBar.heightAnchor,
-                    multiplier: 0.6
-                )
-            ])
-        }
-    }
-    
+   
 //    func filterContentForSearchText(_ searchText: String) {
 //        guard let presenter else { return }
 //       
@@ -195,7 +206,7 @@ extension MainViewController: UISearchResultsUpdating {
 
 private extension MainViewController {
     func createLayout() -> UICollectionViewCompositionalLayout {
-        let layoutSection = CustomLayoutSection.shared.create()
+        let layoutSection = CustomLayoutSection.shared.create(showHeader: true)
         return UICollectionViewCompositionalLayout(section: layoutSection)
     }
 }
@@ -203,8 +214,12 @@ private extension MainViewController {
 // MARK: - Collection DataSource setup
 
 private extension MainViewController {
+    enum SectionLayoutKind: Int, CaseIterable {
+        case main
+    }
+    
     func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Int, EpisodeModel>(collectionView: episodesCollectionView) { [weak self]
+        dataSource = UICollectionViewDiffableDataSource<SectionLayoutKind, EpisodeModel>(collectionView: episodesCollectionView) { [weak self]
             (collectionView: UICollectionView, indexPath: IndexPath, item: EpisodeModel) -> UICollectionViewCell? in
             guard let self,
                 let presenter = self.presenter,
@@ -230,11 +245,28 @@ private extension MainViewController {
             return cell
         }
         
+        dataSource?.supplementaryViewProvider = { collectionView, kind, indexPath in
+             // Создание и настройка представления дополнительного элемента
+            let sectionLayoutKind = SectionLayoutKind.allCases[indexPath.section]
+            
+            switch sectionLayoutKind {
+            case .main:
+                guard let header = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: HeaderEpisodes.identifier,
+                    for: indexPath
+                ) as? HeaderEpisodes
+                else { return UICollectionReusableView() }
+                
+                return header
+            } 
+        }
+
     }
     
     func createDataSnapshot(episodes: EpisodeModels) {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, EpisodeModel>()
-        snapshot.appendSections([0])
+        var snapshot = NSDiffableDataSourceSnapshot<SectionLayoutKind, EpisodeModel>()
+        snapshot.appendSections([.main])
         snapshot.appendItems(episodes)
         dataSource?.apply(
             snapshot,
@@ -335,4 +367,29 @@ extension MainViewController: EpisodeCellDelegate {
     func deleteCell(at idEpisode: Int) {
         presenter?.deleteCell(at:idEpisode)
     }
+}
+
+// MARK: - Handle actions methods
+
+extension MainViewController: HeaderEpisodesDelegate {
+    func filterButtonTapped(searchType: SearchType) {
+        searchBy = searchType
+    }
+}
+
+// MARK: - Constants
+
+private enum Constants {
+    static var lightCornerRadius: CGFloat = 6
+    
+    static var mediumInset: CGFloat = 20
+    static var lightInset: CGFloat = 10
+    static var thinInset: CGFloat = 5
+    
+    static var lightBlueColor = UIColor(
+        _colorLiteralRed: 227/255,
+        green: 242/255,
+        blue: 253/255,
+        alpha: 1
+    )
 }
