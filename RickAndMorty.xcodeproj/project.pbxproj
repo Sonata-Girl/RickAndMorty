@@ -24,6 +24,8 @@
 		672B9CA22B2F7F24004D7B68 /* InformationTableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9CA12B2F7F24004D7B68 /* InformationTableCell.swift */; };
 		672B9CCC2B33865F004D7B68 /* extension+UIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9CCB2B33865F004D7B68 /* extension+UIView.swift */; };
 		672B9CCF2B339252004D7B68 /* HeaderEpisodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9CCE2B339252004D7B68 /* HeaderEpisodes.swift */; };
+		672B9CD12B34CCC2004D7B68 /* PhotoAccessCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9CD02B34CCC2004D7B68 /* PhotoAccessCenter.swift */; };
+		672B9CD32B34EB9F004D7B68 /* extension+UIFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B9CD22B34EB9F004D7B68 /* extension+UIFont.swift */; };
 		67F3E5412B28451A0067D505 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5402B28451A0067D505 /* AppDelegate.swift */; };
 		67F3E5452B28451A0067D505 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5442B28451A0067D505 /* MainViewController.swift */; };
 		67F3E54A2B28451B0067D505 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 67F3E5492B28451B0067D505 /* Assets.xcassets */; };
@@ -33,7 +35,6 @@
 		67F3E55B2B2898560067D505 /* RouterContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E55A2B2898560067D505 /* RouterContracts.swift */; };
 		67F3E55D2B2898AB0067D505 /* MainVCBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E55C2B2898AB0067D505 /* MainVCBuilder.swift */; };
 		67F3E5642B28F8DE0067D505 /* EpisodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5632B28F8DE0067D505 /* EpisodeCell.swift */; };
-		67F3E5672B28FB5D0067D505 /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5662B28FB5D0067D505 /* PaddingLabel.swift */; };
 		67F3E56A2B290EF60067D505 /* EpisodeDto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E5692B290EF60067D505 /* EpisodeDto.swift */; };
 		67F3E56C2B290F3E0067D505 /* MainViewPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E56B2B290F3E0067D505 /* MainViewPresenter.swift */; };
 		67F3E56E2B2913E80067D505 /* EpisodeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F3E56D2B2913E80067D505 /* EpisodeModel.swift */; };
@@ -65,6 +66,8 @@
 		672B9CA12B2F7F24004D7B68 /* InformationTableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationTableCell.swift; sourceTree = "<group>"; };
 		672B9CCB2B33865F004D7B68 /* extension+UIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "extension+UIView.swift"; sourceTree = "<group>"; };
 		672B9CCE2B339252004D7B68 /* HeaderEpisodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderEpisodes.swift; sourceTree = "<group>"; };
+		672B9CD02B34CCC2004D7B68 /* PhotoAccessCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAccessCenter.swift; sourceTree = "<group>"; };
+		672B9CD22B34EB9F004D7B68 /* extension+UIFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "extension+UIFont.swift"; sourceTree = "<group>"; };
 		67F3E53D2B28451A0067D505 /* RickAndMorty.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RickAndMorty.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67F3E5402B28451A0067D505 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		67F3E5442B28451A0067D505 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
@@ -76,7 +79,6 @@
 		67F3E55A2B2898560067D505 /* RouterContracts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterContracts.swift; sourceTree = "<group>"; };
 		67F3E55C2B2898AB0067D505 /* MainVCBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainVCBuilder.swift; sourceTree = "<group>"; };
 		67F3E5632B28F8DE0067D505 /* EpisodeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeCell.swift; sourceTree = "<group>"; };
-		67F3E5662B28FB5D0067D505 /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
 		67F3E5692B290EF60067D505 /* EpisodeDto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeDto.swift; sourceTree = "<group>"; };
 		67F3E56B2B290F3E0067D505 /* MainViewPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewPresenter.swift; sourceTree = "<group>"; };
 		67F3E56D2B2913E80067D505 /* EpisodeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeModel.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 			isa = PBXGroup;
 			children = (
 				672B9CCB2B33865F004D7B68 /* extension+UIView.swift */,
+				672B9CD22B34EB9F004D7B68 /* extension+UIFont.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -257,6 +260,7 @@
 				67F3E5702B298ED50067D505 /* NetworkService.swift */,
 				672B9C812B2B705F004D7B68 /* ErrorTypes.swift */,
 				672B9C832B2D057C004D7B68 /* CacheCharacterWrapper.swift */,
+				672B9CD02B34CCC2004D7B68 /* PhotoAccessCenter.swift */,
 			);
 			path = NetworkService;
 			sourceTree = "<group>";
@@ -286,7 +290,6 @@
 			isa = PBXGroup;
 			children = (
 				67F3E5842B2A2D100067D505 /* CustomLayoutSection.swift */,
-				67F3E5662B28FB5D0067D505 /* PaddingLabel.swift */,
 			);
 			path = CustomUI;
 			sourceTree = "<group>";
@@ -380,9 +383,10 @@
 				672B9C8F2B2E151C004D7B68 /* DetailViewCell.swift in Sources */,
 				672B9CA22B2F7F24004D7B68 /* InformationTableCell.swift in Sources */,
 				672B9CCF2B339252004D7B68 /* HeaderEpisodes.swift in Sources */,
+				672B9CD32B34EB9F004D7B68 /* extension+UIFont.swift in Sources */,
 				672B9C7E2B2B6B96004D7B68 /* CharacterDto.swift in Sources */,
+				672B9CD12B34CCC2004D7B68 /* PhotoAccessCenter.swift in Sources */,
 				67F3E56E2B2913E80067D505 /* EpisodeModel.swift in Sources */,
-				67F3E5672B28FB5D0067D505 /* PaddingLabel.swift in Sources */,
 				67F3E57E2B29B9C80067D505 /* FavoritesViewController.swift in Sources */,
 				672B9C8C2B2E1249004D7B68 /* DetailViewPresenter.swift in Sources */,
 				672B9C842B2D057C004D7B68 /* CacheCharacterWrapper.swift in Sources */,

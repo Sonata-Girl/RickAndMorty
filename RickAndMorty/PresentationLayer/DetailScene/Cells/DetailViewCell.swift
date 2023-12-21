@@ -14,7 +14,7 @@ final class DetailViewCell: UITableViewCell {
     private let propertyLabel: UILabel = {
         let label = UILabel()
         label.textColor = .label
-        label.font = UIFont(name: "Roboto-Medium", size: 17)
+        label.font = UIFont.robotoMedium(size: 17)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -22,7 +22,7 @@ final class DetailViewCell: UITableViewCell {
     private let valueLabel: UILabel = {
         let label = UILabel()
         label.textColor = .systemGray
-        label.font = UIFont(name: "Roboto-Light", size: 16)
+        label.font = UIFont.robotoLight(size: 16)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()

@@ -84,6 +84,9 @@ private extension FavoritesViewController {
 private extension FavoritesViewController {
     func configureNavigationController() {
         navigationItem.title = "Favorites episodes"
+        let font = UIFont.karlaLight(size: 25)
+        let attributes = [NSAttributedString.Key.font: font]
+        navigationController?.navigationBar.titleTextAttributes = attributes
     }
 }
 
