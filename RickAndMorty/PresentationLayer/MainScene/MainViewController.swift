@@ -42,7 +42,7 @@ final class MainViewController: UIViewController {
         let searchController = UISearchController()
         searchController.searchBar.searchTextField.borderStyle = .none
         searchController.searchBar.barTintColor = UIColor.white
-        searchController.searchBar.searchTextField.font = UIFont(name: "Roboto-Thin", size: 20)
+        searchController.searchBar.searchTextField.font = UIFont.robotoThin(size: 20)
         searchController.searchBar.placeholder = "Name or episode (ex.S01E01)..."
         searchController.searchBar.searchTextField.layer.borderColor = UIColor.gray.cgColor
         searchController.searchBar.searchTextField.layer.borderWidth = 1
@@ -184,7 +184,7 @@ private extension MainViewController {
         guard let presenter else { return }
        
         if isSearchBarEmpty {
-            createDataSnapshot(episodes: presenter.episodes)
+            presenter.clearFilter()
         } else {
             presenter.filterEpisodes(searchBy: searchBy, searchText: searchText)
         }
@@ -238,7 +238,8 @@ private extension MainViewController {
                 for: indexPath
             ) as? EpisodeCell else { return EpisodeCell() }
             
-            let item = presenter.episodes[indexPath.item]
+            let episodes = self.isFiltering ? presenter.filteredEpisodes : presenter.episodes
+            let item = episodes[indexPath.item]
             
             if item.character == nil {
                 presenter.getCharacter(
@@ -284,7 +285,11 @@ private extension MainViewController {
     
     func updateDataSnapshot(episodes: EpisodeModels) {
         guard var updatedSnapshot = dataSource?.snapshot() else { return }
-        updatedSnapshot.reloadItems(episodes)
+        if isSearchBarEmpty {
+            updatedSnapshot.reloadItems(episodes)
+        } else {
+            updatedSnapshot.reloadItems(episodes)
+        }
         self.dataSource?.apply(
             updatedSnapshot,
             animatingDifferences: false
@@ -314,7 +319,7 @@ extension MainViewController: UICollectionViewDelegate {
             let _ = presenter.pageInfo?.next
         else { return }
         
-        if !presenter.isSubloading {
+        if !presenter.isSubloading && !isFiltering {
             presenter.startSubloadEpisodes()
         }
     }
@@ -342,7 +347,7 @@ extension MainViewController: MainViewProtocol {
     }
     
     func endAnimationOfFavoriteButton(indexCell: Int) {
-         let indexPath = IndexPath(row: indexCell, section: 0)
+        let indexPath = IndexPath(row: indexCell, section: 0)
         guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
         cell.returnStateOfFavoriteImage()
     }

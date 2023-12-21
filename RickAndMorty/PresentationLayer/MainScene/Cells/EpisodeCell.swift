@@ -143,8 +143,7 @@ private extension EpisodeCell {
         delegate?.characterImageTapped(at: indexCell)
     }
     
-    @objc func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
-        guard let indexCell = indexOfCell() else { return }
+    @objc func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {        guard let indexCell = indexOfCell() else { return }
         delegate?.deleteCell(at: indexCell)
     }
     
@@ -216,7 +215,10 @@ private extension EpisodeCell {
             bottomView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
             mainView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
             mainView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
-            bottomView.heightAnchor.constraint(equalTo: mainView.heightAnchor, multiplier: 0.2)
+            bottomView.heightAnchor.constraint(
+                equalTo: mainView.heightAnchor,
+                multiplier: 0.2
+            )
           ])
         
         NSLayoutConstraint.activate([
@@ -268,7 +270,7 @@ extension EpisodeCell {
     }
     
     func changeSelectedCellState(selected: Bool) {
-        let favoriteImage = selected ? UIImage(named: "FavoriteSelect") : Constants.favoriteLogoDefault
+        let favoriteImage = selected ? Constants.selectFavoriteLogoDefault : Constants.favoriteLogoDefault
         favoriteButton.setImage(favoriteImage, for: .normal)
     }
 
@@ -276,10 +278,7 @@ extension EpisodeCell {
         characterNameLabel.text = nil
         episodeNumberLabel.text = nil
         characterImage.image = Constants.characterLogoDefault
-        favoriteButton.setImage(
-            Constants.favoriteLogoDefault,
-            for: .normal
-        )
+        changeSelectedCellState(selected: false)
         characterImage.contentMode = .scaleAspectFit
     }
     
@@ -309,8 +308,9 @@ private enum Constants {
         ofSize: 20,
         weight: .light
     )
-    static var mediumFont = UIFont(name: "Roboto-Medium", size: 20)
+    static var mediumFont = UIFont.robotoMedium(size: 20)
     
     static var characterLogoDefault = UIImage(named: "NameLogo")
     static var favoriteLogoDefault = UIImage(named: "Favorite")
+    static var selectFavoriteLogoDefault = UIImage(named: "FavoriteSelect")
 }

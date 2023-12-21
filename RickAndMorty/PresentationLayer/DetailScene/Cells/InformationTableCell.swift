@@ -15,7 +15,7 @@ final class InformationTableCell: UITableViewHeaderFooterView {
         let label = UILabel()
         label.textColor = .systemGray2
         label.text = "Informations"
-        label.font = UIFont(name: "Roboto-Medium", size: 20)
+        label.font = UIFont.robotoMedium(size: 20)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()

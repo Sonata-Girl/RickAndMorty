@@ -19,7 +19,7 @@ final class HeaderEpisodes: UICollectionReusableView {
     private lazy var filtersButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("ADVANCED FILTERS", for: .normal)
-        button.titleLabel?.font = UIFont(name: "Roboto-Regular", size: 15)
+        button.titleLabel?.font = UIFont.robotoRegular(size: 15)
         button.setImage(UIImage(named: "Filter"), for: .normal)
         button.backgroundColor = Constants.lightBlueColor
         button.setTitleColor(.systemBlue, for: .normal)

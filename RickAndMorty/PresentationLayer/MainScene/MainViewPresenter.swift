@@ -30,14 +30,18 @@ protocol MainPresenterProtocol: AnyObject {
     var episodes: EpisodeModels { get }
     var filteredEpisodes: EpisodeModels  { get }
     var isSubloading: Bool { get }
+    
     func getEpisodes(subload: Bool)
     func startSubloadEpisodes()
     func getCharacter(characterUrl: URL, episodeIndex: Int)
+   
     func filterEpisodes(searchBy: SearchType?, searchText: String)
     func didSelectFavoriteCell(at idEpisode: Int)
     func characterImageTapped(at idEpisode: Int)
     func deleteCell(at idEpisode: Int)
     func loadFavoriteCells()
+    func clearFilter()
+    
 }
 
 // MARK: - Presenter
@@ -47,9 +51,11 @@ final class MainViewPresenter: MainPresenterProtocol {
     let networkManager: NetworkServiceProtocol?
     let router: RouterProtocol?
     private let cacheCharacter = NSCache<NSString, CacheCharacterWrapper>()
-   
+    
     var episodes: EpisodeModels = []
     var filteredEpisodes: EpisodeModels = []
+    var filteredText: String = ""
+    var filterType: SearchType? = .all
     var favoriteEpisodes = Set<Int>()
     
     var pageNumber = 1
@@ -82,7 +88,13 @@ final class MainViewPresenter: MainPresenterProtocol {
                         }
                         return episodeModel
                     }
-                    self.view?.createCollection(episodes: self.episodes)
+                    if filteredText.isEmpty {
+                        print(#function, "filter is empty")
+                       self.view?.createCollection(episodes: self.episodes)
+                    } else {
+                        print(#function, "filter not empty")
+                        filterEpisodes(searchBy: filterType, searchText: filteredText)
+                    }
                 case .failure(let error):
                     self.view?.failure(error: error)
             }
@@ -101,8 +113,15 @@ final class MainViewPresenter: MainPresenterProtocol {
     func getCharacter(characterUrl: URL, episodeIndex: Int) {
         guard let indexEpisode = episodes.indices.contains(episodeIndex) ? episodeIndex : nil else { return }
         if let cachedCharacter = cacheCharacter.object(forKey: characterUrl.absoluteString as NSString) {
-            self.episodes[indexEpisode].character = CharacterModel(from: cachedCharacter)
-            self.view?.updateCollection(episodes: episodes)
+            episodes[indexEpisode].character = CharacterModel(from: cachedCharacter)
+            
+            if filteredText.isEmpty {
+                print(#function, "filter is empty")
+                view?.updateCollection(episodes: episodes)
+            } else {
+                print(#function, "filter not empty")
+                filterEpisodes(searchBy: filterType, searchText: filteredText)
+            }
             return
         }
         networkManager?.getCharacter(characterUrl: characterUrl) { [weak self] result in
@@ -136,8 +155,12 @@ final class MainViewPresenter: MainPresenterProtocol {
                     forKey: character.url.absoluteString as NSString
                 )
             }
-            if filteredEpisodes.isEmpty {
+           if filteredText.isEmpty {
+                print(#function, "filter is empty")
                 self.view?.updateCollection(episodes: episodes)
+            } else {
+                print(#function, "filter not empty")
+                filterEpisodes(searchBy: filterType, searchText: filteredText)
             }
         }
     }
@@ -145,6 +168,8 @@ final class MainViewPresenter: MainPresenterProtocol {
     // MARK: Change data methods
     
     func filterEpisodes(searchBy: SearchType?, searchText: String) {
+        filteredText = searchText
+        filterType = searchBy
         filteredEpisodes = episodes.filter { episodeModel in
             switch searchBy {
                 case .episode :
@@ -159,8 +184,18 @@ final class MainViewPresenter: MainPresenterProtocol {
                     }
                     return episodeModel.episodeNumber.lowercased().contains(searchText.lowercased()) || nameSearch
             }
+        
         }
+        print(#function)
         view?.createCollection(episodes: filteredEpisodes)
+    }
+    
+    func clearFilter() {
+        filteredText = ""
+        filterType = .all
+        filteredEpisodes.removeAll()
+        print(#function)
+        view?.createCollection(episodes: episodes)
     }
     
     func didSelectFavoriteCell(at indexCell: Int) {
@@ -171,9 +206,17 @@ final class MainViewPresenter: MainPresenterProtocol {
         } else {
             favoriteEpisodes.remove(episodes[indexCell].id)
         }
-        
         saveFavoritesToFile()
-        view?.updateCollection(episodes: episodes)
+        
+        if filteredText.isEmpty {
+            print(#function, "filter is empty")
+            view?.updateCollection(episodes: episodes)
+        } else {
+            filteredEpisodes[indexCell].isFavorite.toggle()
+            print(#function, "filter not empty")
+            view?.updateCollection(episodes: filteredEpisodes)
+        }
+        
         view?.endAnimationOfFavoriteButton(indexCell: indexCell)
     }
     
@@ -183,8 +226,14 @@ final class MainViewPresenter: MainPresenterProtocol {
     }
     
     func deleteCell(at indexCell: Int) {
-        let episode = episodes.remove(at: indexCell)
-        view?.deleteItem(episodes: [episode])
+        if filteredText.isEmpty {
+            let episode = episodes.remove(at: indexCell)
+            view?.deleteItem(episodes: [episode])
+        } else {
+            episodes.remove(at: indexCell)
+            let episode = filteredEpisodes.remove(at: indexCell)
+            view?.deleteItem(episodes: [episode])
+        }
     }
 
     // MARK: Saving favorites methods
@@ -200,7 +249,22 @@ final class MainViewPresenter: MainPresenterProtocol {
             }
             return episodeModel
         }
-        self.view?.updateCollection(episodes: episodes)
+        if filteredEpisodes.isEmpty {
+            print(#function, "filter is empty")
+           self.view?.updateCollection(episodes: episodes)
+        } else {
+            filteredEpisodes = filteredEpisodes.map {
+                var episodeModel = $0
+                if self.favoriteEpisodes.contains($0.id) {
+                    episodeModel.isFavorite = true
+                } else {
+                    episodeModel.isFavorite = false
+                }
+                return episodeModel
+            }
+            print(#function, "filter not empty")
+           self.view?.updateCollection(episodes: filteredEpisodes)
+        }
     }
     
     func saveFavoritesToFile() {
