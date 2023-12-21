@@ -16,7 +16,7 @@ final class CustomLayoutSection {
     
     private init() {}
    
-    func create() -> NSCollectionLayoutSection {
+    func create(showHeader: Bool) -> NSCollectionLayoutSection {
        let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
             heightDimension: .fractionalHeight(1)
@@ -41,7 +41,8 @@ final class CustomLayoutSection {
         )
         
         let layoutSection = NSCollectionLayoutSection(group: layoutGroup)
-//        layoutSection.supplementaryContentInsetsReference = .safeArea
+        if showHeader { layoutSection.boundarySupplementaryItems = [headerItem()] }
+        
         layoutSection.contentInsets = contentInsets
         return layoutSection
     }
@@ -51,12 +52,20 @@ final class CustomLayoutSection {
     private func headerItem() -> NSCollectionLayoutBoundarySupplementaryItem {
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
-            heightDimension: .estimated(25)
+            heightDimension: .absolute(55)
         )
-        return NSCollectionLayoutBoundarySupplementaryItem(
+        let headerSection = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .topLeading
+            alignment: .top
         )
+        let insetSize: CGFloat = 10
+        headerSection.contentInsets = .init(
+            top: 0,
+            leading: insetSize,
+            bottom: 0,
+            trailing: insetSize
+        )
+        return headerSection
     }
 }
