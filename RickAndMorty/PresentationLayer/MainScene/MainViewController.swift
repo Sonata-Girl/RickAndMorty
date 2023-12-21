@@ -8,7 +8,7 @@
 import UIKit
 
 enum SearchType {
-    case name, episode
+    case name, episode, all
 }
 
 final class MainViewController: UIViewController {
@@ -30,7 +30,13 @@ final class MainViewController: UIViewController {
     
     // MARK: UI elements
     
-    private var filtersButtonHeightConstraint: NSLayoutConstraint!
+    private lazy var searchBarRightConstraint: NSLayoutConstraint = {
+        let constraint = searchController.searchBar.trailingAnchor.constraint(
+            equalTo: searchController.searchBar.searchTextField.trailingAnchor,
+            constant: Constants.mediumInset
+        )
+        return constraint
+    }()
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController()
@@ -42,8 +48,9 @@ final class MainViewController: UIViewController {
         searchController.searchBar.searchTextField.layer.borderWidth = 1
         searchController.searchBar.searchTextField.layer.cornerRadius = Constants.lightCornerRadius
         searchController.searchBar.searchTextField.frame.size.height = 50
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.delegate = self
         searchController.searchBar.searchTextField.translatesAutoresizingMaskIntoConstraints = false
-        searchController.searchBar.translatesAutoresizingMaskIntoConstraints = false
         return searchController
     }()
     
@@ -130,7 +137,7 @@ private extension MainViewController {
             ),
             logoImageView.heightAnchor.constraint(
                 equalTo: navigationBar.heightAnchor,
-                multiplier: 0.6
+                multiplier: 0.4
             )
         ])
         
@@ -139,10 +146,7 @@ private extension MainViewController {
                 equalTo: searchController.searchBar.leadingAnchor,
                 constant: Constants.mediumInset
             ),
-            searchController.searchBar.trailingAnchor.constraint(
-                equalTo: searchController.searchBar.searchTextField.trailingAnchor,
-                constant: Constants.mediumInset
-            ),
+            searchBarRightConstraint,
             searchController.searchBar.searchTextField.heightAnchor.constraint(
                 equalTo: searchController.searchBar.heightAnchor,
                 multiplier: 1
@@ -172,25 +176,19 @@ private extension MainViewController {
     func configureNavigationController() {
         navigationItem.searchController = searchController
         searchController.searchResultsUpdater = self
+        navigationController?.navigationItem.largeTitleDisplayMode = .always
         navigationController?.navigationBar.prefersLargeTitles = true
     }
    
-//    func filterContentForSearchText(_ searchText: String) {
-//        guard let presenter else { return }
-//       
-//        presenter.filteredJobs = presenter.jobs.filter { jobModel in
-//            if isSearchBarEmpty {
-//                return false
-//            } else {
-//                return jobModel.employer.lowercased().contains(searchText.lowercased()) || jobModel.profession.lowercased().contains(searchText.lowercased())
-//            }
-//        }
-//        if isSearchBarEmpty {
-//            createDataSnapshot(items: presenter.jobs)
-//        } else {
-//            createDataSnapshot(items: presenter.filteredJobs)
-//        }
-//    }
+    func filterContentForSearchText(_ searchText: String) {
+        guard let presenter else { return }
+       
+        if isSearchBarEmpty {
+            createDataSnapshot(episodes: presenter.episodes)
+        } else {
+            presenter.filterEpisodes(searchBy: searchBy, searchText: searchText)
+        }
+    }
 }
 
 // MARK: - Search methods
@@ -198,7 +196,19 @@ private extension MainViewController {
 extension MainViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         guard let filter = searchController.searchBar.text else { return }
-//        filterContentForSearchText(filter)
+        filterContentForSearchText(filter)
+    }
+}
+
+extension MainViewController: UISearchControllerDelegate {
+    func willPresentSearchController(_ searchController: UISearchController) {
+        searchBarRightConstraint.constant = 80
+        view.layoutIfNeeded()
+    }
+    
+    func willDismissSearchController(_ searchController: UISearchController) {
+        searchBarRightConstraint.constant = Constants.mediumInset
+        view.layoutIfNeeded()
     }
 }
 
@@ -228,10 +238,7 @@ private extension MainViewController {
                 for: indexPath
             ) as? EpisodeCell else { return EpisodeCell() }
             
-            #warning("clear")
-//            let jobs = self.isFiltering ? presenter.filteredJobs : presenter.jobs
-            let episodes = presenter.episodes
-            let item = episodes[indexPath.item]
+            let item = presenter.episodes[indexPath.item]
             
             if item.character == nil {
                 presenter.getCharacter(
@@ -258,6 +265,7 @@ private extension MainViewController {
                 ) as? HeaderEpisodes
                 else { return UICollectionReusableView() }
                 
+                header.delegate = self
                 return header
             } 
         }
@@ -276,11 +284,7 @@ private extension MainViewController {
     
     func updateDataSnapshot(episodes: EpisodeModels) {
         guard var updatedSnapshot = dataSource?.snapshot() else { return }
-        if isSearchBarEmpty {
-            updatedSnapshot.reloadItems(episodes)
-        } else {
-            updatedSnapshot.reloadItems(episodes)
-        }
+        updatedSnapshot.reloadItems(episodes)
         self.dataSource?.apply(
             updatedSnapshot,
             animatingDifferences: false
@@ -314,11 +318,6 @@ extension MainViewController: UICollectionViewDelegate {
             presenter.startSubloadEpisodes()
         }
     }
-    
-//    func getReservedJobs() -> EpisodeModels {
-//        guard let jobs = presenter?.jobs else { return JobsModel() }
-//        return jobs.filter { $0.isSelected }
-//    }
 }
 
 // MARK: - Loading data with network service
@@ -374,6 +373,13 @@ extension MainViewController: EpisodeCellDelegate {
 extension MainViewController: HeaderEpisodesDelegate {
     func filterButtonTapped(searchType: SearchType) {
         searchBy = searchType
+        var textPlaceHolder = ""
+        switch searchBy {
+            case .all, .none: textPlaceHolder = "Name or episode (ex.S01E01)..."
+            case .episode: textPlaceHolder = "Episode (ex.S01E01)..."
+            case .name: textPlaceHolder = "Name (ex.Rick)..."
+        }
+        searchController.searchBar.placeholder = textPlaceHolder
     }
 }
 

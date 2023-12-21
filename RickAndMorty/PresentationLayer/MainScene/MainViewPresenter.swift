@@ -33,6 +33,7 @@ protocol MainPresenterProtocol: AnyObject {
     func getEpisodes(subload: Bool)
     func startSubloadEpisodes()
     func getCharacter(characterUrl: URL, episodeIndex: Int)
+    func filterEpisodes(searchBy: SearchType?, searchText: String)
     func didSelectFavoriteCell(at idEpisode: Int)
     func characterImageTapped(at idEpisode: Int)
     func deleteCell(at idEpisode: Int)
@@ -135,14 +136,34 @@ final class MainViewPresenter: MainPresenterProtocol {
                     forKey: character.url.absoluteString as NSString
                 )
             }
-            self.view?.updateCollection(episodes: episodes)
+            if filteredEpisodes.isEmpty {
+                self.view?.updateCollection(episodes: episodes)
+            }
         }
     }
     
     // MARK: Change data methods
     
+    func filterEpisodes(searchBy: SearchType?, searchText: String) {
+        filteredEpisodes = episodes.filter { episodeModel in
+            switch searchBy {
+                case .episode :
+                    return episodeModel.episodeNumber.lowercased().contains(searchText.lowercased())
+                case .name :
+                    guard let characterName = episodeModel.character?.name else { return false }
+                    return characterName.lowercased().contains(searchText.lowercased())
+                case .all, .none :
+                    var nameSearch = false
+                    if let characterName = episodeModel.character?.name {
+                        nameSearch = characterName.lowercased().contains(searchText.lowercased())
+                    }
+                    return episodeModel.episodeNumber.lowercased().contains(searchText.lowercased()) || nameSearch
+            }
+        }
+        view?.createCollection(episodes: filteredEpisodes)
+    }
+    
     func didSelectFavoriteCell(at indexCell: Int) {
-//        let episode = episodes[indexCell]
         episodes[indexCell].isFavorite.toggle()
         
         if episodes[indexCell].isFavorite {
@@ -163,7 +184,6 @@ final class MainViewPresenter: MainPresenterProtocol {
     
     func deleteCell(at indexCell: Int) {
         let episode = episodes.remove(at: indexCell)
-//        view?.createCollection(episodes: episodes)
         view?.deleteItem(episodes: [episode])
     }
 

@@ -17,13 +17,14 @@ final class HeaderEpisodes: UICollectionReusableView {
 
     // MARK: UI
     private lazy var filtersButton: UIButton = {
-        let button = UIButton()
+        let button = UIButton(type: .system)
         button.setTitle("ADVANCED FILTERS", for: .normal)
         button.titleLabel?.font = UIFont(name: "Roboto-Regular", size: 15)
         button.setImage(UIImage(named: "Filter"), for: .normal)
         button.backgroundColor = Constants.lightBlueColor
         button.setTitleColor(.systemBlue, for: .normal)
         button.layer.cornerRadius = Constants.lightCornerRadius
+        button.showsMenuAsPrimaryAction = true
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -46,10 +47,6 @@ final class HeaderEpisodes: UICollectionReusableView {
     override func prepareForReuse() {
         super.prepareForReuse()
     }
-    
-    private func filterButtonTapped(searchType: SearchType) {
-        delegate?.filterButtonTapped(searchType: searchType)
-    }
 }
 
 // MARK: - Configure view
@@ -62,13 +59,16 @@ private extension HeaderEpisodes {
         addShadow()
         
         let sortedByName = UIAction(title: "by Character name") { _ in
-            self.filterButtonTapped(searchType: .name)
+            self.delegate?.filterButtonTapped(searchType: .name)
         }
         let sortedByEpisode = UIAction(title: "by Episode") { _ in
-            self.filterButtonTapped(searchType: .episode)
+            self.delegate?.filterButtonTapped(searchType: .episode)
+        }
+        let sortedByAll = UIAction(title: "by all") { _ in
+            self.delegate?.filterButtonTapped(searchType: .all)
         }
         
-        filtersButton.menu = UIMenu(children: [sortedByName, sortedByEpisode])
+        filtersButton.menu = UIMenu(title: "Filtered", children: [sortedByName, sortedByEpisode, sortedByAll])
     }
 }
 
