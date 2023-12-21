@@ -13,11 +13,14 @@ protocol EpisodeCellDelegate: AnyObject {
     func deleteCell(at indexCell: Int)
 }
 
+extension EpisodeCellDelegate {
+    func deleteCell(at indexCell: Int) {}
+}
+
 final class EpisodeCell: UICollectionViewCell {
     
     weak var delegate: EpisodeCellDelegate?
-    var indexCell: Int?
-       
+
     // MARK: UI elements
     
     private let mainView: UIView = {
@@ -101,26 +104,47 @@ final class EpisodeCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        setDefaultStateCell()
+    func returnStateOfFavoriteImage() {
+        animateFavoriteButton()
     }
+}
+
+// MARK: - Configure view
+
+private extension EpisodeCell {
+    func configureView() {
+        backgroundColor = .white
+        layer.cornerRadius = Constants.lightCornerRadius
+        addShadow()
+        
+        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe))
+        swipeGesture.direction = .left
+        contentView.addGestureRecognizer(swipeGesture)
+    }
+}
+
+// MARK: - Cell actions
+
+private extension EpisodeCell {
     
-    // MARK: Cell actions
-    
-    @objc private func selectedFavoriteCell() {
-        guard let indexCell else { return }
+    func indexOfCell() -> Int? {
+        let superView = superview as? UICollectionView
+        guard let indexPath = superView?.collectionViewLayout.collectionView?.indexPath(for: self) else { return nil }
+        return indexPath.item
+    }
+
+    @objc func selectedFavoriteCell() {
+        guard let indexCell = indexOfCell() else { return }
         delegate?.selectFavoriteCell(at: indexCell)
     }
     
-    @objc private func characterImageTapped() {
-        guard let indexCell else { return }
+    @objc func characterImageTapped() {
+        guard let indexCell = indexOfCell() else { return }
         delegate?.characterImageTapped(at: indexCell)
-        animateFavoriteButton()
     }
     
-    func returnStateOfImage() {
-        animateFavoriteButton()
+    @objc func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {        guard let indexCell = indexOfCell() else { return }
+        delegate?.deleteCell(at: indexCell)
     }
     
     private func animateFavoriteButton() {
@@ -133,35 +157,6 @@ final class EpisodeCell: UICollectionViewCell {
                 self.favoriteButton.transform = CGAffineTransform.identity
             }
         })
-    }
-}
-// MARK: - Configure view
-
-private extension EpisodeCell {
-    func configureView() {
-        backgroundColor = .white
-        
-        let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe))
-        swipeGesture.direction = .left
-        addGestureRecognizer(swipeGesture)
-       
-    }
-    
-    @objc private func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
-        guard let indexCell else { return }
-        delegate?.deleteCell(at: indexCell)
-    }
-    
-    func setDefaultStateCell() {
-        layer.cornerRadius = Constants.lightCornerRadius
-        layer.shadowOffset = CGSize(width: 0, height: 1)
-        layer.shadowRadius = 2
-        layer.shadowColor = UIColor.black.withAlphaComponent(0.7).cgColor
-        layer.shadowOpacity = 0.5
-        layer.shadowPath = UIBezierPath(
-            roundedRect: bounds.insetBy(dx: -1, dy: -1),
-            cornerRadius: Constants.lightCornerRadius
-        ).cgPath
     }
 }
 
@@ -220,7 +215,10 @@ private extension EpisodeCell {
             bottomView.leadingAnchor.constraint(equalTo: mainView.leadingAnchor),
             mainView.trailingAnchor.constraint(equalTo: bottomView.trailingAnchor),
             mainView.bottomAnchor.constraint(equalTo: bottomView.bottomAnchor),
-            bottomView.heightAnchor.constraint(equalTo: mainView.heightAnchor, multiplier: 0.2)
+            bottomView.heightAnchor.constraint(
+                equalTo: mainView.heightAnchor,
+                multiplier: 0.2
+            )
           ])
         
         NSLayoutConstraint.activate([
@@ -260,8 +258,7 @@ private extension EpisodeCell {
 // MARK: - Configure cell values
 
 extension EpisodeCell {
-    func configureCell(episodeModel: EpisodeModel, indexPathCell: Int) {
-        indexCell = indexPathCell
+    func configureCell(episodeModel: EpisodeModel) {
         characterNameLabel.text = episodeModel.character?.name
         episodeNumberLabel.text = episodeModel.episodeNumber
        
@@ -269,16 +266,11 @@ extension EpisodeCell {
             characterImage.image = UIImage(data: imageData)
             characterImage.contentMode = .scaleAspectFill
         }
-        #warning("Clean")
-//        if let data = try? Data(contentsOf: episodeModel.character?.imageUrl ?? URL(fileURLWithPath: "")) {
-//            characterImage.image = UIImage(data: data)
-//        }
-        
         changeSelectedCellState(selected: episodeModel.isFavorite)
     }
     
     func changeSelectedCellState(selected: Bool) {
-        let favoriteImage = selected ? UIImage(named: "FavoriteSelect") : Constants.favoriteLogoDefault
+        let favoriteImage = selected ? Constants.selectFavoriteLogoDefault : Constants.favoriteLogoDefault
         favoriteButton.setImage(favoriteImage, for: .normal)
     }
 
@@ -286,10 +278,7 @@ extension EpisodeCell {
         characterNameLabel.text = nil
         episodeNumberLabel.text = nil
         characterImage.image = Constants.characterLogoDefault
-        favoriteButton.setImage(
-            Constants.favoriteLogoDefault,
-            for: .normal
-        )
+        changeSelectedCellState(selected: false)
         characterImage.contentMode = .scaleAspectFit
     }
     
@@ -319,8 +308,9 @@ private enum Constants {
         ofSize: 20,
         weight: .light
     )
-    static var mediumFont = UIFont(name: "Roboto-Medium", size: 20)
+    static var mediumFont = UIFont.robotoMedium(size: 20)
     
     static var characterLogoDefault = UIImage(named: "NameLogo")
     static var favoriteLogoDefault = UIImage(named: "Favorite")
+    static var selectFavoriteLogoDefault = UIImage(named: "FavoriteSelect")
 }

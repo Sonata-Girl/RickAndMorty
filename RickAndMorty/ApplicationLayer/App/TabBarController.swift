@@ -11,6 +11,8 @@ final class CustomTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tabBar.barStyle = .default
+        tabBar.itemPositioning = .centered
         setTabBarAppearance()
     }
     

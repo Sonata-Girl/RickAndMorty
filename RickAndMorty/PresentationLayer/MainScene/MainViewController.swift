@@ -7,12 +7,16 @@
 
 import UIKit
 
+enum SearchType {
+    case name, episode, all
+}
+
 final class MainViewController: UIViewController {
     
     // MARK: Properties
     
     var presenter: MainPresenterProtocol?
-    private var dataSource: UICollectionViewDiffableDataSource<Int, EpisodeModel>?
+    private var dataSource: UICollectionViewDiffableDataSource<SectionLayoutKind, EpisodeModel>?
     
     private var isSearchBarEmpty: Bool {
         return searchController.searchBar.text?.isEmpty ?? true
@@ -22,15 +26,43 @@ final class MainViewController: UIViewController {
         return searchController.isActive && !isSearchBarEmpty
     }
     
+    private var searchBy: SearchType?
+    
     // MARK: UI elements
     
-    private var searchController: UISearchController = {
-        let sc = UISearchController()
-        sc.searchBar.placeholder = "Поиск"
-        sc.searchBar.searchBarStyle = .minimal
-        return sc
+    private lazy var searchBarRightConstraint: NSLayoutConstraint = {
+        let constraint = searchController.searchBar.trailingAnchor.constraint(
+            equalTo: searchController.searchBar.searchTextField.trailingAnchor,
+            constant: Constants.mediumInset
+        )
+        return constraint
     }()
     
+    private lazy var searchController: UISearchController = {
+        let searchController = UISearchController()
+        searchController.searchBar.searchTextField.borderStyle = .none
+        searchController.searchBar.barTintColor = UIColor.white
+        searchController.searchBar.searchTextField.font = UIFont.robotoThin(size: 20)
+        searchController.searchBar.placeholder = "Name or episode (ex.S01E01)..."
+        searchController.searchBar.searchTextField.layer.borderColor = UIColor.gray.cgColor
+        searchController.searchBar.searchTextField.layer.borderWidth = 1
+        searchController.searchBar.searchTextField.layer.cornerRadius = Constants.lightCornerRadius
+        searchController.searchBar.searchTextField.frame.size.height = 50
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.delegate = self
+        searchController.searchBar.searchTextField.translatesAutoresizingMaskIntoConstraints = false
+        return searchController
+    }()
+    
+    private var logoImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(named: "NameLogo")
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+
     private lazy var episodesCollectionView: UICollectionView = {
         let layout = createLayout()
         let collectionView = UICollectionView(
@@ -40,6 +72,11 @@ final class MainViewController: UIViewController {
         collectionView.register(
             EpisodeCell.self,
             forCellWithReuseIdentifier: EpisodeCell.identifier
+        )
+        collectionView.register(
+            HeaderEpisodes.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: HeaderEpisodes.identifier
         )
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
@@ -61,13 +98,9 @@ final class MainViewController: UIViewController {
         presenter?.getEpisodes(subload: false)
     }
 
-//    @objc private func handleSwipe(_ gestureRecognizer: UISwipeGestureRecognizer) {
-//        guard let indexPath = episodesCollectionView.indexPathForItem(at: gestureRecognizer.location(in: episodesCollectionView)) else { return }
-//        presenter?.deleteCell(at: indexPath.item)
-//    }
-    
-    func deleteCell(at indexCell: Int) {
-        presenter?.deleteCell(at:indexCell)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        presenter?.loadFavoriteCells()
     }
 }
 
@@ -84,6 +117,7 @@ private extension MainViewController {
 private extension MainViewController {
     func additionSubviews() {
         view.addSubview(episodesCollectionView)
+        navigationController?.navigationBar.addSubview(logoImageView)
     }
 }
 
@@ -91,13 +125,49 @@ private extension MainViewController {
 
 private extension MainViewController {
     func setupLayout() {
+        let navigationBar = navigationController?.navigationBar ?? UINavigationBar()
         NSLayoutConstraint.activate([
-            episodesCollectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            episodesCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            logoImageView.leftAnchor.constraint(
+                equalTo: navigationBar.leftAnchor,
+                constant: Constants.mediumInset
+            ),
+            navigationBar.rightAnchor.constraint(
+                equalTo: logoImageView.rightAnchor,
+                constant: Constants.mediumInset
+            ),
+            logoImageView.heightAnchor.constraint(
+                equalTo: navigationBar.heightAnchor,
+                multiplier: 0.4
+            )
+        ])
+        
+        NSLayoutConstraint.activate([
+            searchController.searchBar.searchTextField.leadingAnchor.constraint(
+                equalTo: searchController.searchBar.leadingAnchor,
+                constant: Constants.mediumInset
+            ),
+            searchBarRightConstraint,
+            searchController.searchBar.searchTextField.heightAnchor.constraint(
+                equalTo: searchController.searchBar.heightAnchor,
+                multiplier: 1
+            )
+        ])
+        
+        NSLayoutConstraint.activate([
+            episodesCollectionView.topAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.topAnchor,
+                constant: 10
+            ),
+            episodesCollectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             episodesCollectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            episodesCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            episodesCollectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
     }
+}
+ 
+extension MainViewController: UISearchBarDelegate {
+    
+//    searc
 }
 
 // MARK: - Configure navigation controller
@@ -105,41 +175,48 @@ private extension MainViewController {
 private extension MainViewController {
     func configureNavigationController() {
         navigationItem.searchController = searchController
-//        searchController.searchResultsUpdater = self
+        searchController.searchResultsUpdater = self
+        navigationController?.navigationItem.largeTitleDisplayMode = .always
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
-    
-//    func filterContentForSearchText(_ searchText: String) {
-//        guard let presenter else { return }
-//       
-//        presenter.filteredJobs = presenter.jobs.filter { jobModel in
-//            if isSearchBarEmpty {
-//                return false
-//            } else {
-//                return jobModel.employer.lowercased().contains(searchText.lowercased()) || jobModel.profession.lowercased().contains(searchText.lowercased())
-//            }
-//        }
-//        if isSearchBarEmpty {
-//            createDataSnapshot(items: presenter.jobs)
-//        } else {
-//            createDataSnapshot(items: presenter.filteredJobs)
-//        }
-//    }
+   
+    func filterContentForSearchText(_ searchText: String) {
+        guard let presenter else { return }
+       
+        if isSearchBarEmpty {
+            presenter.clearFilter()
+        } else {
+            presenter.filterEpisodes(searchBy: searchBy, searchText: searchText)
+        }
+    }
 }
 
 // MARK: - Search methods
 
-//extension MainViewController: UISearchResultsUpdating {
-//    func updateSearchResults(for searchController: UISearchController) {
-//        guard let filter = searchController.searchBar.text else { return }
-//        filterContentForSearchText(filter)
-//    }
-//}
+extension MainViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let filter = searchController.searchBar.text else { return }
+        filterContentForSearchText(filter)
+    }
+}
+
+extension MainViewController: UISearchControllerDelegate {
+    func willPresentSearchController(_ searchController: UISearchController) {
+        searchBarRightConstraint.constant = 80
+        view.layoutIfNeeded()
+    }
+    
+    func willDismissSearchController(_ searchController: UISearchController) {
+        searchBarRightConstraint.constant = Constants.mediumInset
+        view.layoutIfNeeded()
+    }
+}
 
 // MARK: - Collection layout methods
 
 private extension MainViewController {
     func createLayout() -> UICollectionViewCompositionalLayout {
-        let layoutSection = CustomLayoutSection.shared.create()
+        let layoutSection = CustomLayoutSection.shared.create(showHeader: true)
         return UICollectionViewCompositionalLayout(section: layoutSection)
     }
 }
@@ -147,8 +224,12 @@ private extension MainViewController {
 // MARK: - Collection DataSource setup
 
 private extension MainViewController {
+    enum SectionLayoutKind: Int, CaseIterable {
+        case main
+    }
+    
     func setupDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Int, EpisodeModel>(collectionView: episodesCollectionView) { [weak self]
+        dataSource = UICollectionViewDiffableDataSource<SectionLayoutKind, EpisodeModel>(collectionView: episodesCollectionView) { [weak self]
             (collectionView: UICollectionView, indexPath: IndexPath, item: EpisodeModel) -> UICollectionViewCell? in
             guard let self,
                 let presenter = self.presenter,
@@ -157,9 +238,7 @@ private extension MainViewController {
                 for: indexPath
             ) as? EpisodeCell else { return EpisodeCell() }
             
-            #warning("clear")
-//            let jobs = self.isFiltering ? presenter.filteredJobs : presenter.jobs
-            let episodes = presenter.episodes
+            let episodes = self.isFiltering ? presenter.filteredEpisodes : presenter.episodes
             let item = episodes[indexPath.item]
             
             if item.character == nil {
@@ -170,34 +249,59 @@ private extension MainViewController {
             }
             
             cell.delegate = self
-            cell.configureCell(episodeModel: item, indexPathCell: indexPath.item)
+            cell.configureCell(episodeModel: item)
             return cell
         }
         
+        dataSource?.supplementaryViewProvider = { collectionView, kind, indexPath in
+             // Создание и настройка представления дополнительного элемента
+            let sectionLayoutKind = SectionLayoutKind.allCases[indexPath.section]
+            
+            switch sectionLayoutKind {
+            case .main:
+                guard let header = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: HeaderEpisodes.identifier,
+                    for: indexPath
+                ) as? HeaderEpisodes
+                else { return UICollectionReusableView() }
+                
+                header.delegate = self
+                return header
+            } 
+        }
+
     }
     
-    func createDataSnapshot(items: EpisodeModels) {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, EpisodeModel>()
-        snapshot.appendSections([0])
-        snapshot.appendItems(items)
+    func createDataSnapshot(episodes: EpisodeModels) {
+        var snapshot = NSDiffableDataSourceSnapshot<SectionLayoutKind, EpisodeModel>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(episodes)
         dataSource?.apply(
             snapshot,
             animatingDifferences: false
         )
     }
     
-    func updateDataSnapshot(withAnimation: Bool = false) {
-        guard let presenter,
-            var updatedSnapshot = dataSource?.snapshot() else { return }
+    func updateDataSnapshot(episodes: EpisodeModels) {
+        guard var updatedSnapshot = dataSource?.snapshot() else { return }
         if isSearchBarEmpty {
-            updatedSnapshot.reloadItems(presenter.episodes)
-//            updatedSnapshot.appendItems(presenter.episodes, toSection: 0)
+            updatedSnapshot.reloadItems(episodes)
         } else {
-            updatedSnapshot.reloadItems(presenter.filteredEpisodes)
+            updatedSnapshot.reloadItems(episodes)
         }
         self.dataSource?.apply(
             updatedSnapshot,
-            animatingDifferences: withAnimation
+            animatingDifferences: false
+        )
+    }
+    
+    func deleteItemFromDataSnapshot(episodes: EpisodeModels) {
+        guard var updatedSnapshot = dataSource?.snapshot() else { return }
+        updatedSnapshot.deleteItems(episodes)
+        dataSource?.apply(
+            updatedSnapshot,
+            animatingDifferences: true
         )
     }
 }
@@ -205,12 +309,6 @@ private extension MainViewController {
 // MARK: - UICollectionViewDelegate
 
 extension MainViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-//        guard let presenter else { return }
-//        presenter.jobs[indexPath.item].isSelected.toggle()
-//        updateDataSnapshot()
-//        saveUserSettings()
-    }
 
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let lastItem = collectionView.numberOfItems(inSection: 0) - 1
@@ -221,34 +319,37 @@ extension MainViewController: UICollectionViewDelegate {
             let _ = presenter.pageInfo?.next
         else { return }
         
-        if !presenter.isSubloading {
+        if !presenter.isSubloading && !isFiltering {
             presenter.startSubloadEpisodes()
         }
     }
-    
-    
-//    func getReservedJobs() -> EpisodeModels {
-//        guard let jobs = presenter?.jobs else { return JobsModel() }
-//        return jobs.filter { $0.isSelected }
-//    }
 }
 
 // MARK: - Loading data with network service
 
 extension MainViewController: MainViewProtocol {
-    func createCollection() {
-        guard let presenter else { return }
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.createDataSnapshot(items: presenter.episodes)
+    func createCollection(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.createDataSnapshot(episodes: episodes)
         }
     }
     
-    func updateCollection() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.updateDataSnapshot()
+    func updateCollection(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.updateDataSnapshot(episodes: episodes)
         }
+    }
+    
+    func deleteItem(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.deleteItemFromDataSnapshot(episodes: episodes)
+        }
+    }
+    
+    func endAnimationOfFavoriteButton(indexCell: Int) {
+        let indexPath = IndexPath(row: indexCell, section: 0)
+        guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
+        cell.returnStateOfFavoriteImage()
     }
     
     func failure(error: Error) {
@@ -259,38 +360,47 @@ extension MainViewController: MainViewProtocol {
 // MARK: - Handle actions methods
 
 extension MainViewController: EpisodeCellDelegate {
-    
-    func selectFavoriteCell(at indexCell: Int) {
-        presenter?.didSelectFavoriteCell(at: indexCell)
-        let indexPath = IndexPath(row: indexCell, section: 0)
-            
-        guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
-        cell.returnStateOfImage()
+    func selectFavoriteCell(at idEpisode: Int) {
+        presenter?.didSelectFavoriteCell(at: idEpisode)
     }
     
-    func characterImageTapped(at indexCell: Int) {
-        presenter?.characterImageTapped(at: indexCell)
+    func characterImageTapped(at idEpisode: Int) {
+        presenter?.characterImageTapped(at: idEpisode)
     }
-//    @objc func reserveButtonPressed() {
-//        showSumSalaryAlert()
-//    }
-//    
-//    func showSumSalaryAlert() {
-//        let reservedJobs = getReservedJobs().map { $0.salary }.reduce( 0, + )
-//  
-//        let message = "Вы заработали \(String(format: "%.2f", reservedJobs)) рублей"
-//        let alert = UIAlertController(title: "", message: message, preferredStyle: .alert)
-//        let okAction = UIAlertAction(title: "Ок", style: .default, handler: nil)
-//        alert.addAction(okAction)
-//        present(alert, animated: true)
-//    }
+     
+    func deleteCell(at idEpisode: Int) {
+        presenter?.deleteCell(at:idEpisode)
+    }
+}
+
+// MARK: - Handle actions methods
+
+extension MainViewController: HeaderEpisodesDelegate {
+    func filterButtonTapped(searchType: SearchType) {
+        searchBy = searchType
+        var textPlaceHolder = ""
+        switch searchBy {
+            case .all, .none: textPlaceHolder = "Name or episode (ex.S01E01)..."
+            case .episode: textPlaceHolder = "Episode (ex.S01E01)..."
+            case .name: textPlaceHolder = "Name (ex.Rick)..."
+        }
+        searchController.searchBar.placeholder = textPlaceHolder
+    }
 }
 
 // MARK: - Constants
 
 private enum Constants {
-    static var indentFromSuperView: CGFloat = 20
-    static var layoutSectionInset: CGFloat = 10
+    static var lightCornerRadius: CGFloat = 6
+    
+    static var mediumInset: CGFloat = 20
+    static var lightInset: CGFloat = 10
+    static var thinInset: CGFloat = 5
+    
+    static var lightBlueColor = UIColor(
+        _colorLiteralRed: 227/255,
+        green: 242/255,
+        blue: 253/255,
+        alpha: 1
+    )
 }
-
-

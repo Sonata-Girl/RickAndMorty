@@ -11,25 +11,10 @@ class FavoritesViewController: UIViewController {
     
     // MARK: Properties
     
-    var presenter: FavoritesPresenterProtocol?
+    var presenter: FavoritesViewPresenter?
     private var dataSource: UICollectionViewDiffableDataSource<Int, EpisodeModel>?
     
-    private var isSearchBarEmpty: Bool {
-        return searchController.searchBar.text?.isEmpty ?? true
-    }
-    
-    private var isFiltering: Bool {
-        return searchController.isActive && !isSearchBarEmpty
-    }
-    
     // MARK: UI elements
-    
-    private var searchController: UISearchController = {
-        let sc = UISearchController()
-        sc.searchBar.placeholder = "Поиск"
-        sc.searchBar.searchBarStyle = .minimal
-        return sc
-    }()
     
     private lazy var episodesCollectionView: UICollectionView = {
         let layout = createLayout()
@@ -42,8 +27,8 @@ class FavoritesViewController: UIViewController {
             forCellWithReuseIdentifier: EpisodeCell.identifier
         )
         collectionView.showsVerticalScrollIndicator = false
-        //        collectionView.backgroundColor = .appLightGrayColor()
         collectionView.delegate = self
+        collectionView.allowsMultipleSelection = false
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
@@ -57,13 +42,11 @@ class FavoritesViewController: UIViewController {
         setupLayout()
         configureNavigationController()
         setupDataSource()
-        
-        presenter?.getEpisodes()
     }
     
-    private func saveUserSettings() {
-        guard let presenter else { return }
-        //        presenter.saveSelectedCells(selectedCells: getReservedJobs())
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        presenter?.loadFavoriteCells()
     }
 }
 
@@ -80,8 +63,6 @@ private extension FavoritesViewController {
 private extension FavoritesViewController {
     func additionSubviews() {
         view.addSubview(episodesCollectionView)
-        //        view.addSubview(reserveView)
-        //        reserveView.addSubview(reserveButton)
     }
 }
 
@@ -102,42 +83,18 @@ private extension FavoritesViewController {
 
 private extension FavoritesViewController {
     func configureNavigationController() {
-        navigationItem.searchController = searchController
-        //        searchController.searchResultsUpdater = self
+        navigationItem.title = "Favorites episodes"
+        let font = UIFont.karlaLight(size: 25)
+        let attributes = [NSAttributedString.Key.font: font]
+        navigationController?.navigationBar.titleTextAttributes = attributes
     }
-    
-    //    func filterContentForSearchText(_ searchText: String) {
-    //        guard let presenter else { return }
-    //
-    //        presenter.filteredJobs = presenter.jobs.filter { jobModel in
-    //            if isSearchBarEmpty {
-    //                return false
-    //            } else {
-    //                return jobModel.employer.lowercased().contains(searchText.lowercased()) || jobModel.profession.lowercased().contains(searchText.lowercased())
-    //            }
-    //        }
-    //        if isSearchBarEmpty {
-    //            createDataSnapshot(items: presenter.jobs)
-    //        } else {
-    //            createDataSnapshot(items: presenter.filteredJobs)
-    //        }
-    //    }
 }
-
-// MARK: - Search methods
-
-//extension MainViewController: UISearchResultsUpdating {
-//    func updateSearchResults(for searchController: UISearchController) {
-//        guard let filter = searchController.searchBar.text else { return }
-//        filterContentForSearchText(filter)
-//    }
-//}
 
 // MARK: - Collection layout methods
 
 private extension FavoritesViewController {
     func createLayout() -> UICollectionViewCompositionalLayout {
-        let layoutSection = CustomLayoutSection.shared.create()
+        let layoutSection = CustomLayoutSection.shared.create(showHeader: false)
         return UICollectionViewCompositionalLayout(section: layoutSection)
     }
 }
@@ -149,112 +106,97 @@ private extension FavoritesViewController {
         dataSource = UICollectionViewDiffableDataSource<Int, EpisodeModel>(collectionView: episodesCollectionView) { [weak self]
             (collectionView: UICollectionView, indexPath: IndexPath, item: EpisodeModel) -> UICollectionViewCell? in
             guard let self,
-                  let presenter = self.presenter,
-                  let cell = episodesCollectionView.dequeueReusableCell(
-                    withReuseIdentifier: EpisodeCell.identifier,
-                    for: indexPath
-                  ) as? EpisodeCell else { return EpisodeCell() }
+                let presenter = self.presenter,
+                let cell = episodesCollectionView.dequeueReusableCell(
+                withReuseIdentifier: EpisodeCell.identifier,
+                for: indexPath
+            ) as? EpisodeCell else { return EpisodeCell() }
             
-            //            let jobs = self.isFiltering ? presenter.filteredJobs : presenter.jobs
-            //            let item = jobs[indexPath.item]
-            //
-            //            if item.logoData == nil {
-            //                presenter.loadImage(
-            //                    jobModel: item,
-            //                    indexItem: indexPath.item
-            //                )
-            //            }
-            //            cell.configureCell(jobModel: item)
+            let episodes = presenter.episodes
+            let item = episodes[indexPath.item]
+            
+            if item.character == nil {
+                presenter.getCharacter(
+                    characterUrl: item.characterUrl,
+                    episodeIndex: indexPath.item
+                )
+            }
+            
+            cell.delegate = self
+            cell.configureCell(episodeModel: item)
             return cell
         }
     }
     
-    func createDataSnapshot(items: EpisodeModels) {
+    func createDataSnapshot(episodes: EpisodeModels) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, EpisodeModel>()
         snapshot.appendSections([0])
-        snapshot.appendItems(items)
+        snapshot.appendItems(episodes)
         dataSource?.apply(
             snapshot,
             animatingDifferences: false
         )
     }
     
-    func updateDataSnapshot(withAnimation: Bool = false) {
-        guard let presenter,
-              var updatedSnapshot = dataSource?.snapshot() else { return }
-        if isSearchBarEmpty {
-            //            updatedSnapshot.reloadItems(presenter.jobs)
-        } else {
-            //            updatedSnapshot.reloadItems(presenter.filteredJobs)
-        }
-        self.dataSource?.apply(
+    func updateDataSnapshot(episodes: EpisodeModels) {
+        guard var updatedSnapshot = dataSource?.snapshot() else { return }
+            updatedSnapshot.reloadItems(episodes)
+        dataSource?.apply(
             updatedSnapshot,
-            animatingDifferences: withAnimation
+            animatingDifferences: false
         )
     }
+    
+    func deleteItemFromDataSnapshot(episodes: EpisodeModels) {
+        guard var updatedSnapshot = dataSource?.snapshot() else { return }
+        updatedSnapshot.deleteItems(episodes)
+        dataSource?.apply(
+            updatedSnapshot,
+            animatingDifferences: true
+        )
+    }
+   
 }
 
 // MARK: - UICollectionViewDelegate
 
-extension FavoritesViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        //        guard let presenter else { return }
-        //        presenter.jobs[indexPath.item].isSelected.toggle()
-        //        updateDataSnapshot()
-        //        saveUserSettings()
-    }
-    
-    
-    //    func getReservedJobs() -> EpisodeModels {
-    //        guard let jobs = presenter?.jobs else { return JobsModel() }
-    //        return jobs.filter { $0.isSelected }
-    //    }
-}
+extension FavoritesViewController: UICollectionViewDelegate {}
 
 // MARK: - Loading data with network service
 
 extension FavoritesViewController: FavoritesViewProtocol {
-    func favoritesLoaded() {
-        guard let presenter else { return }
-        createDataSnapshot( items: presenter.favorites)
+    func createCollection(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.createDataSnapshot(episodes: episodes)
+        }
     }
     
-//    func imageLoaded() {
-//        DispatchQueue.main.async {
-//            self.updateDataSnapshot()
-//        }
-//    }
-//    
-//    func failure(error: Error) {
-//        print(error.localizedDescription)
-//    }
+    func updateCollection(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.updateDataSnapshot(episodes: episodes)
+        }
+    }
+    
+    func deleteItem(episodes: EpisodeModels) {
+        DispatchQueue.main.async {
+            self.deleteItemFromDataSnapshot(episodes: episodes)
+        }
+    }
+    
+    func failure(error: Error) {
+        print(error.localizedDescription)
+    }
+
 }
 
 // MARK: - Handle actions methods
 
-private extension FavoritesViewController {
+extension FavoritesViewController: EpisodeCellDelegate {
+    func selectFavoriteCell(at indexCell: Int) {
+        presenter?.didSelectFavoriteCell(at: indexCell)
+    }
     
-    //    @objc func reserveButtonPressed() {
-    //        showSumSalaryAlert()
-    //    }
-    //
-    //    func showSumSalaryAlert() {
-    //        let reservedJobs = getReservedJobs().map { $0.salary }.reduce( 0, + )
-    //
-    //        let message = "Вы заработали \(String(format: "%.2f", reservedJobs)) рублей"
-    //        let alert = UIAlertController(title: "", message: message, preferredStyle: .alert)
-    //        let okAction = UIAlertAction(title: "Ок", style: .default, handler: nil)
-    //        alert.addAction(okAction)
-    //        present(alert, animated: true)
-    //    }
+    func characterImageTapped(at indexCell: Int) {
+        presenter?.characterImageTapped(at: indexCell)
+    }
 }
-
-// MARK: - Constants
-
-private enum Constants {
-    static var indentFromSuperView: CGFloat = 20
-    static var layoutSectionInset: CGFloat = 10
-    static let cellHeight: CGFloat = 105
-}
-
-
