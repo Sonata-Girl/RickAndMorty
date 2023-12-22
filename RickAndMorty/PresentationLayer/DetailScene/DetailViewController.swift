@@ -309,7 +309,16 @@ extension DetailViewController: UIImagePickerControllerDelegate, UINavigationCon
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         guard let photo = info[.originalImage] as? UIImage else { return }
         
-        characterImageView.image = photo
+        var createdAt: Date?
+        
+        if let asset = info[UIImagePickerController.InfoKey.phAsset] as? PHAsset {
+            createdAt  = asset.creationDate
+        }
+        
+        DispatchQueue.main.async {
+            self.characterImageView.image = photo
+            picker.dismiss(animated: true)
+        }
     }
 }
 
