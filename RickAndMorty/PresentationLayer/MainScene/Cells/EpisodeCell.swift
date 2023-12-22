@@ -150,10 +150,12 @@ private extension EpisodeCell {
     private func animateFavoriteButton() {
         UIView.animate(
             withDuration: 0.3,
-            animations: {
+            animations: { [weak self] in
+                guard let self else { return }
                 self.favoriteButton.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
             },
-            completion: { _ in UIView.animate(withDuration: 0.3) {
+            completion: { _ in UIView.animate(withDuration: 0.3) { [weak self] in
+                guard let self else { return }
                 self.favoriteButton.transform = CGAffineTransform.identity
             }
         })

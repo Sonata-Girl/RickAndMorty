@@ -199,24 +199,31 @@ final class MainViewPresenter: MainPresenterProtocol {
     }
     
     func didSelectFavoriteCell(at indexCell: Int) {
-        episodes[indexCell].isFavorite.toggle()
-        
-        if episodes[indexCell].isFavorite {
-            favoriteEpisodes.insert(episodes[indexCell].id)
-        } else {
-            favoriteEpisodes.remove(episodes[indexCell].id)
-        }
-        saveFavoritesToFile()
-        
         if filteredText.isEmpty {
+            episodes[indexCell].isFavorite.toggle()
+            if episodes[indexCell].isFavorite {
+                favoriteEpisodes.insert(episodes[indexCell].id)
+            } else {
+                favoriteEpisodes.remove(episodes[indexCell].id)
+            }
             print(#function, "filter is empty")
             view?.updateCollection(episodes: episodes)
         } else {
             filteredEpisodes[indexCell].isFavorite.toggle()
+            let id = filteredEpisodes[indexCell].id
+            if let index = episodes.firstIndex(where: { $0.id == id }) {
+                episodes[index].isFavorite.toggle()
+            }
+            if filteredEpisodes[indexCell].isFavorite {
+                favoriteEpisodes.insert(id)
+            } else {
+                favoriteEpisodes.remove(id)
+            }
             print(#function, "filter not empty")
             view?.updateCollection(episodes: filteredEpisodes)
         }
-        
+        saveFavoritesToFile()
+       
         view?.endAnimationOfFavoriteButton(indexCell: indexCell)
     }
     

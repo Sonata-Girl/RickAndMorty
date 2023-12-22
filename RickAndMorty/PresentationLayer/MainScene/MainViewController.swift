@@ -347,7 +347,7 @@ extension MainViewController: MainViewProtocol {
     }
     
     func endAnimationOfFavoriteButton(indexCell: Int) {
-        let indexPath = IndexPath(row: indexCell, section: 0)
+        let indexPath = IndexPath(item: indexCell, section: 0)
         guard let cell = episodesCollectionView.cellForItem(at: indexPath) as? EpisodeCell else { return }
         cell.returnStateOfFavoriteImage()
     }
@@ -360,16 +360,16 @@ extension MainViewController: MainViewProtocol {
 // MARK: - Handle actions methods
 
 extension MainViewController: EpisodeCellDelegate {
-    func selectFavoriteCell(at idEpisode: Int) {
-        presenter?.didSelectFavoriteCell(at: idEpisode)
+    func selectFavoriteCell(at indexCell: Int) {
+        presenter?.didSelectFavoriteCell(at: indexCell)
     }
     
-    func characterImageTapped(at idEpisode: Int) {
-        presenter?.characterImageTapped(at: idEpisode)
+    func characterImageTapped(at indexCell: Int) {
+        presenter?.characterImageTapped(at: indexCell)
     }
      
-    func deleteCell(at idEpisode: Int) {
-        presenter?.deleteCell(at:idEpisode)
+    func deleteCell(at indexCell: Int) {
+        presenter?.deleteCell(at: indexCell)
     }
 }
 
